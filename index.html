@@ -19,6 +19,11 @@ header {
   padding: 10px;
   text-align: center;
 }
+  <div style="text-align:center; padding:10px;">
+  <button id="installBtnTop" style="display:none">
+    📲 Instalar Saladillo Cuida
+  </button>
+</div>
 
 header img {
   max-width: 100%;
@@ -258,13 +263,19 @@ if ("serviceWorker" in navigator) {
 }
 
 let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
+const installBtn = document.getElementById("installBtnTop");
+
 window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
   installBtn.style.display = "block";
 });
-installBtn.onclick = () => deferredPrompt.prompt();
+
+installBtn.onclick = async () => {
+  installBtn.style.display = "none";
+  await deferredPrompt.prompt();
+  deferredPrompt = null;
+};
 </script>
 
 </body>
