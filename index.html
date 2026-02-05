@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Volvé a Casa</title>
+<title>Saladillo Cuida</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- PWA -->
@@ -61,10 +61,6 @@ button {
   margin-top: 15px;
 }
 
-button.secondary {
-  background: #2196F3;
-}
-
 .mascota {
   border-left: 5px solid #4CAF50;
 }
@@ -98,7 +94,7 @@ button.secondary {
 <body>
 
 <header>
-  <h1>🐾 Volvé a Casa</h1>
+  <h1>🐾 Saladillo Cuida</h1>
   <p>Mascotas perdidas y encontradas en Saladillo</p>
 </header>
 
@@ -214,7 +210,7 @@ function mostrar() {
 
 mostrar();
 
-/* PWA: registrar Service Worker */
+/* Registrar Service Worker */
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
     .then(() => console.log('Service Worker registrado'))
