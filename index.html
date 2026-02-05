@@ -194,8 +194,11 @@ camara.onchange = galeria.onchange = e => {
 };
 
 window.usarUbicacion = () => {
-  navigator.geolocation.getCurrentPosition(p => {
-    ubicacion.value = `Lat ${p.coords.latitude}, Lng ${p.coords.longitude}`;
+  navigator.geolocation.getCurrentPosition(async p => {
+    const lat = p.coords.latitude;
+    const lng = p.coords.longitude;
+    // Guardamos un link de Google Maps
+    ubicacion.value = `https://www.google.com/maps?q=${lat},${lng}`;
   });
 };
 
@@ -219,26 +222,37 @@ window.publicar = async () => {
     fecha: serverTimestamp()
   });
 
+  // Aviso de publicación
+  toast.innerText = "✅ Aviso publicado con éxito!";
   toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 2500);
+  setTimeout(() => toast.style.display = "none", 3000);
+
   cargarAvisos();
 };
 
 async function cargarAvisos() {
-  const snap = await getDocs(collection(db, "avisos")); // trae todos los documentos
+  const snap = await getDocs(collection(db, "avisos"));
 
   const avisos = snap.docs
     .map(d => ({ id: d.id, ...d.data() }))
-    .filter(a => a.activo)  // filtramos activos
-    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis()); // ordenamos por fecha desc
+    .filter(a => a.activo)
+    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis());
 
   feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
 
   avisos.forEach(a => {
+    const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
+    const fechaStr = fecha.toLocaleString("es-AR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    });
+
     feed.innerHTML += `
       <div class="post">
-        <strong>${a.tipo} · ${a.estado}</strong><br>
-        <small>${a.ubicacion || ""}</small>
+        <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
+        <small>
+          ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
+        </small>
         ${a.foto ? `<img src="${a.foto}">` : ""}
         ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
         <p>📞 ${a.telefono || ""}</p>
