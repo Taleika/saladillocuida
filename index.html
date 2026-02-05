@@ -209,10 +209,24 @@ window.publicar = async () => {
   });
 
   toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
+  setTimeout(() => toast.style.display = "none", 2500);
+
+  // 🔗 MENSAJE WHATSAPP
+  const mensaje = `
+🐾 ${tipo.value.toUpperCase()} ${estado.value.toUpperCase()} en Saladillo
+
+📍 Ubicación: ${ubicacion.value || "No especificada"}
+📞 Contacto: ${telefono.value}
+
+🔎 Ayudanos a difundir
+Saladillo Cuida
+  `;
+
+  const urlWA = "https://wa.me/?text=" + encodeURIComponent(mensaje);
+  window.open(urlWA, "_blank");
+
   cargarAvisos();
 };
-
 async function cargarAvisos() {
   const q = query(collection(db, "avisos"), orderBy("fecha", "desc"));
   const snap = await getDocs(q);
