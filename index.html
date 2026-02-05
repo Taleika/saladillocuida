@@ -228,7 +228,7 @@ Saladillo Cuida
   cargarAvisos();
 };
 async function cargarAvisos() {
-  const q = query(collection(db, "avisos"), orderBy("fecha", "desc"));
+const q = collection(db, "avisos");
   const snap = await getDocs(q);
   feed.innerHTML = "";
 
