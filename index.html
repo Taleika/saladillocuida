@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Saladillo Cuida</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4CAF50">
 
@@ -34,7 +35,7 @@ header img {
 .card {
   background: white;
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 15px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
@@ -108,15 +109,15 @@ button {
     <h2>📍 Publicar mascota</h2>
 
     <label>Tipo</label>
-    <select>
-      <option>Perro</option>
-      <option>Gato</option>
+    <select id="tipo">
+      <option value="Perro">Perro</option>
+      <option value="Gato">Gato</option>
     </select>
 
     <label>Estado</label>
-    <select>
-      <option>Perdido</option>
-      <option>Encontrado</option>
+    <select id="estado">
+      <option value="Perdido">Perdido</option>
+      <option value="Encontrado">Encontrado</option>
     </select>
 
     <label>Foto</label>
@@ -133,10 +134,10 @@ button {
     <label>Ubicación</label>
     <button onclick="usarUbicacion()">📍 Usar mi ubicación actual</button>
 
-    <input type="text" placeholder="O escribí calle y altura">
+    <input type="text" id="direccion" placeholder="O escribí calle y altura">
 
     <label>Teléfono</label>
-    <input type="tel" placeholder="Ej: 2344 123456">
+    <input type="tel" id="telefono" placeholder="Ej: 2344 123456">
 
     <button onclick="publicar()">Publicar aviso</button>
   </div>
@@ -147,13 +148,36 @@ button {
   ✅ Aviso publicado correctamente
 </div>
 
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC8F48ib5OUrQZDThyUYPKBYQpNMO4d23Y",
+    authDomain: "saladillo-cuida.firebaseapp.com",
+    projectId: "saladillo-cuida",
+    storageBucket: "saladillo-cuida.firebasestorage.app",
+    messagingSenderId: "728549842822",
+    appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  window.db = db;
+  window.storage = storage;
+</script>
+
 <script>
-// Service Worker
+// SERVICE WORKER
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
 
-// INSTALACIÓN PWA
+// INSTALAR PWA
 let deferredPrompt;
 const installBtn = document.getElementById("installBtn");
 
@@ -169,6 +193,7 @@ installBtn.addEventListener("click", () => {
 
 // FOTO
 const previewImg = document.getElementById("previewImg");
+let archivoFoto = null;
 
 function abrirCamara() {
   document.getElementById("camara").click();
@@ -182,12 +207,12 @@ document.getElementById("camara").onchange = mostrarFoto;
 document.getElementById("galeria").onchange = mostrarFoto;
 
 function mostrarFoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  archivoFoto = e.target.files[0];
+  if (!archivoFoto) return;
 
   const reader = new FileReader();
   reader.onload = () => previewImg.src = reader.result;
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(archivoFoto);
 }
 
 // UBICACIÓN
@@ -198,16 +223,12 @@ function usarUbicacion() {
   }
 
   navigator.geolocation.getCurrentPosition(pos => {
-    alert(
-      "Ubicación obtenida:\nLat: " +
-      pos.coords.latitude +
-      "\nLng: " +
-      pos.coords.longitude
-    );
+    document.getElementById("direccion").value =
+      `Lat ${pos.coords.latitude.toFixed(5)}, Lng ${pos.coords.longitude.toFixed(5)}`;
   });
 }
 
-// CONFIRMACIÓN
+// PUBLICAR (por ahora visual)
 function publicar() {
   const toast = document.getElementById("toast");
   toast.style.display = "block";
