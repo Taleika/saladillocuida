@@ -199,7 +199,7 @@ window.publicar = async () => {
   let fotoURL = "";
 
   if (archivoFoto) {
-    const r = ref(storage, "fotos/" + Date.now());
+    const r = ref(storage, "animals/" + Date.now());
     await uploadBytes(r, archivoFoto);
     fotoURL = await getDownloadURL(r);
   }
