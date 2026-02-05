@@ -103,12 +103,10 @@ button {
 
 <div class="container">
 
-  <!-- INSTALAR -->
   <div class="card">
     <button id="installBtn" style="display:none">📲 Instalar Saladillo Cuida</button>
   </div>
 
-  <!-- FORM -->
   <div class="card">
     <h2>📍 Publicar mascota</h2>
 
@@ -137,7 +135,7 @@ button {
 
     <label>Ubicación</label>
     <button onclick="usarUbicacion()">📍 Usar ubicación actual</button>
-    <input type="text" id="ubicacion" placeholder="O escribí calle y altura">
+    <input type="text" id="ubicacion" placeholder="Calle y altura">
 
     <label>Teléfono</label>
     <input type="tel" id="telefono" placeholder="Ej: 2344 123456">
@@ -145,7 +143,6 @@ button {
     <button onclick="publicar()">Publicar aviso</button>
   </div>
 
-  <!-- FEED -->
   <div class="card">
     <h2>🐾 Avisos recientes</h2>
     <div id="feed">Cargando avisos...</div>
@@ -155,10 +152,9 @@ button {
 
 <div class="toast" id="toast">✅ Aviso publicado</div>
 
-<!-- FIREBASE -->
 <script type="module">
-import { serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -205,31 +201,17 @@ window.publicar = async () => {
     ubicacion: ubicacion.value,
     telefono: telefono.value,
     foto: fotoURL,
-    fecha: new Date()
+    fecha: serverTimestamp()
   });
 
   toast.style.display = "block";
   setTimeout(() => toast.style.display = "none", 2500);
 
-  // 🔗 MENSAJE WHATSAPP
-  const mensaje = `
-🐾 ${tipo.value.toUpperCase()} ${estado.value.toUpperCase()} en Saladillo
-
-📍 Ubicación: ${ubicacion.value || "No especificada"}
-📞 Contacto: ${telefono.value}
-
-🔎 Ayudanos a difundir
-Saladillo Cuida
-  `;
-
-  const urlWA = "https://wa.me/?text=" + encodeURIComponent(mensaje);
-  window.open(urlWA, "_blank");
-
   cargarAvisos();
 };
+
 async function cargarAvisos() {
-const q = collection(db, "avisos");
-  const snap = await getDocs(q);
+  const snap = await getDocs(collection(db, "avisos"));
   feed.innerHTML = "";
 
   snap.forEach(doc => {
@@ -237,9 +219,9 @@ const q = collection(db, "avisos");
     feed.innerHTML += `
       <div class="post">
         <strong>${d.tipo} · ${d.estado}</strong><br>
-        <small>${d.ubicacion}</small>
+        <small>${d.ubicacion || ""}</small>
         ${d.foto ? `<img src="${d.foto}">` : ""}
-        <p>📞 ${d.telefono}</p>
+        <p>📞 ${d.telefono || ""}</p>
       </div>
     `;
   });
@@ -249,7 +231,6 @@ const q = collection(db, "avisos");
 
 cargarAvisos();
 
-// PWA
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
