@@ -154,7 +154,7 @@ button {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -204,6 +204,12 @@ window.publicar = async () => {
     fecha: serverTimestamp()
   });
 
+  // Reset UI
+  archivoFoto = null;
+  previewImg.src = "";
+  ubicacion.value = "";
+  telefono.value = "";
+
   toast.style.display = "block";
   setTimeout(() => toast.style.display = "none", 2500);
 
@@ -211,7 +217,14 @@ window.publicar = async () => {
 };
 
 async function cargarAvisos() {
-  const snap = await getDocs(collection(db, "avisos"));
+  feed.innerHTML = "Cargando avisos...";
+
+  const q = query(
+    collection(db, "avisos"),
+    orderBy("fecha", "desc")
+  );
+
+  const snap = await getDocs(q);
   feed.innerHTML = "";
 
   snap.forEach(doc => {
@@ -220,13 +233,15 @@ async function cargarAvisos() {
       <div class="post">
         <strong>${d.tipo} · ${d.estado}</strong><br>
         <small>${d.ubicacion || ""}</small>
-        ${d.foto ? `<img src="${d.foto}">` : ""}
+        ${d.foto ? `<img src="${d.foto}" loading="lazy">` : ""}
         <p>📞 ${d.telefono || ""}</p>
       </div>
     `;
   });
 
-  if (snap.empty) feed.innerHTML = "Todavía no hay avisos.";
+  if (snap.empty) {
+    feed.innerHTML = "Todavía no hay avisos.";
+  }
 }
 
 cargarAvisos();
