@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Saladillo Cuida</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4CAF50">
 
@@ -25,7 +24,6 @@ header {
 
 header img {
   max-width: 100%;
-  height: auto;
 }
 
 .container {
@@ -38,10 +36,6 @@ header img {
   border-radius: 12px;
   margin-bottom: 15px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-h2 {
-  margin-top: 0;
 }
 
 label {
@@ -63,17 +57,28 @@ button {
   background: #4CAF50;
   color: white;
   border: none;
-  margin-top: 10px;
-}
-
-.preview {
-  margin-top: 10px;
-  text-align: center;
+  cursor: pointer;
 }
 
 .preview img {
-  max-width: 100%;
+  width: 100%;
   border-radius: 10px;
+  margin-top: 10px;
+}
+
+.post {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.post img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.post small {
+  color: #777;
 }
 
 .toast {
@@ -86,7 +91,6 @@ button {
   padding: 15px 20px;
   border-radius: 25px;
   display: none;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 </style>
 </head>
@@ -99,29 +103,29 @@ button {
 
 <div class="container">
 
-  <!-- BOTÓN INSTALAR -->
+  <!-- INSTALAR -->
   <div class="card">
     <button id="installBtn" style="display:none">📲 Instalar Saladillo Cuida</button>
   </div>
 
-  <!-- FORMULARIO -->
+  <!-- FORM -->
   <div class="card">
     <h2>📍 Publicar mascota</h2>
 
     <label>Tipo</label>
     <select id="tipo">
-      <option value="Perro">Perro</option>
-      <option value="Gato">Gato</option>
+      <option>Perro</option>
+      <option>Gato</option>
     </select>
 
     <label>Estado</label>
     <select id="estado">
-      <option value="Perdido">Perdido</option>
-      <option value="Encontrado">Encontrado</option>
+      <option>Perdido</option>
+      <option>Encontrado</option>
     </select>
 
     <label>Foto</label>
-    <button onclick="abrirCamara()">📸 Sacar foto ahora</button>
+    <button onclick="abrirCamara()">📸 Sacar foto</button>
     <button onclick="abrirGaleria()">🖼️ Adjuntar foto</button>
 
     <input type="file" id="camara" accept="image/*" capture="environment" hidden>
@@ -132,9 +136,8 @@ button {
     </div>
 
     <label>Ubicación</label>
-    <button onclick="usarUbicacion()">📍 Usar mi ubicación actual</button>
-
-    <input type="text" id="direccion" placeholder="O escribí calle y altura">
+    <button onclick="usarUbicacion()">📍 Usar ubicación actual</button>
+    <input type="text" id="ubicacion" placeholder="O escribí calle y altura">
 
     <label>Teléfono</label>
     <input type="tel" id="telefono" placeholder="Ej: 2344 123456">
@@ -142,42 +145,101 @@ button {
     <button onclick="publicar()">Publicar aviso</button>
   </div>
 
+  <!-- FEED -->
+  <div class="card">
+    <h2>🐾 Avisos recientes</h2>
+    <div id="feed">Cargando avisos...</div>
+  </div>
+
 </div>
 
-<div class="toast" id="toast">
-  ✅ Aviso publicado correctamente
-</div>
+<div class="toast" id="toast">✅ Aviso publicado</div>
 
 <!-- FIREBASE -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC8F48ib5OUrQZDThyUYPKBYQpNMO4d23Y",
-    authDomain: "saladillo-cuida.firebaseapp.com",
-    projectId: "saladillo-cuida",
-    storageBucket: "saladillo-cuida.firebasestorage.app",
-    messagingSenderId: "728549842822",
-    appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyC8F48ib5OUrQZDThyUYPKBYQpNMO4d23Y",
+  authDomain: "saladillo-cuida.firebaseapp.com",
+  projectId: "saladillo-cuida",
+  storageBucket: "saladillo-cuida.firebasestorage.app",
+  messagingSenderId: "728549842822",
+  appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-  window.db = db;
-  window.storage = storage;
-</script>
+let archivoFoto = null;
 
-<script>
-// SERVICE WORKER
+window.abrirCamara = () => camara.click();
+window.abrirGaleria = () => galeria.click();
+
+camara.onchange = galeria.onchange = e => {
+  archivoFoto = e.target.files[0];
+  previewImg.src = URL.createObjectURL(archivoFoto);
+};
+
+window.usarUbicacion = () => {
+  navigator.geolocation.getCurrentPosition(pos => {
+    ubicacion.value = `Lat ${pos.coords.latitude}, Lng ${pos.coords.longitude}`;
+  });
+};
+
+window.publicar = async () => {
+  let fotoURL = "";
+
+  if (archivoFoto) {
+    const refFoto = ref(storage, "fotos/" + Date.now());
+    await uploadBytes(refFoto, archivoFoto);
+    fotoURL = await getDownloadURL(refFoto);
+  }
+
+  await addDoc(collection(db, "avisos"), {
+    tipo: tipo.value,
+    estado: estado.value,
+    ubicacion: ubicacion.value,
+    telefono: telefono.value,
+    foto: fotoURL,
+    fecha: new Date()
+  });
+
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 3000);
+  cargarAvisos();
+};
+
+async function cargarAvisos() {
+  const q = query(collection(db, "avisos"), orderBy("fecha", "desc"));
+  const snap = await getDocs(q);
+  feed.innerHTML = "";
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    feed.innerHTML += `
+      <div class="post">
+        <strong>${d.tipo} · ${d.estado}</strong><br>
+        <small>${d.ubicacion}</small>
+        ${d.foto ? `<img src="${d.foto}">` : ""}
+        <p>📞 ${d.telefono}</p>
+      </div>
+    `;
+  });
+
+  if (snap.empty) feed.innerHTML = "Todavía no hay avisos.";
+}
+
+cargarAvisos();
+
+// PWA
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
 
-// INSTALAR PWA
 let deferredPrompt;
 const installBtn = document.getElementById("installBtn");
 
@@ -187,53 +249,7 @@ window.addEventListener("beforeinstallprompt", e => {
   installBtn.style.display = "block";
 });
 
-installBtn.addEventListener("click", () => {
-  deferredPrompt.prompt();
-});
-
-// FOTO
-const previewImg = document.getElementById("previewImg");
-let archivoFoto = null;
-
-function abrirCamara() {
-  document.getElementById("camara").click();
-}
-
-function abrirGaleria() {
-  document.getElementById("galeria").click();
-}
-
-document.getElementById("camara").onchange = mostrarFoto;
-document.getElementById("galeria").onchange = mostrarFoto;
-
-function mostrarFoto(e) {
-  archivoFoto = e.target.files[0];
-  if (!archivoFoto) return;
-
-  const reader = new FileReader();
-  reader.onload = () => previewImg.src = reader.result;
-  reader.readAsDataURL(archivoFoto);
-}
-
-// UBICACIÓN
-function usarUbicacion() {
-  if (!navigator.geolocation) {
-    alert("La ubicación no está disponible");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(pos => {
-    document.getElementById("direccion").value =
-      `Lat ${pos.coords.latitude.toFixed(5)}, Lng ${pos.coords.longitude.toFixed(5)}`;
-  });
-}
-
-// PUBLICAR (por ahora visual)
-function publicar() {
-  const toast = document.getElementById("toast");
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
-}
+installBtn.onclick = () => deferredPrompt.prompt();
 </script>
 
 </body>
