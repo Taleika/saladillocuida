@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Volvé a Casa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4CAF50">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+}
+
+header {
+  background: #4CAF50;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+main {
+  padding: 15px;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  margin-top: 15px;
+}
+
+button.secondary {
+  background: #2196F3;
+}
+
+.mascota {
+  border-left: 5px solid #4CAF50;
+}
+
+.mascota.perdido {
+  border-color: #E57373;
+}
+
+.mascota img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.actions a {
+  display: inline-block;
+  margin-top: 8px;
+  margin-right: 10px;
+  text-decoration: none;
+  color: #2196F3;
+  font-weight: bold;
+}
+
+.estado {
+  font-size: 14px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🐾 Volvé a Casa</h1>
+  <p>Mascotas perdidas y encontradas en Saladillo</p>
+</header>
+
+<main>
+
+<div class="card">
+  <h2>Publicar mascota</h2>
+
+  <label>Mascota</label>
+  <select id="animal">
+    <option value="Perro">🐶 Perro</option>
+    <option value="Gato">🐱 Gato</option>
+  </select>
+
+  <label>Estado</label>
+  <select id="estado">
+    <option value="Encontrado">🟢 Encontrado</option>
+    <option value="Perdido">🔴 Perdido</option>
+  </select>
+
+  <label>Foto</label>
+  <input type="file" id="foto" accept="image/*" capture="environment">
+
+  <label>Teléfono / WhatsApp</label>
+  <input type="tel" id="telefono" placeholder="Ej: 2345XXXXXX">
+
+  <button onclick="obtenerUbicacion()">📍 Usar mi ubicación</button>
+  <p id="ubicacionTexto"></p>
+
+  <button onclick="publicar()">PUBLICAR</button>
+</div>
+
+<h2>Publicaciones</h2>
+<div id="lista"></div>
+
+</main>
+
+<script>
+let lat = null;
+let lng = null;
+
+function obtenerUbicacion() {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+      document.getElementById("ubicacionTexto").innerText =
+        "Ubicación detectada ✔";
+    },
+    () => alert("No se pudo obtener la ubicación")
+  );
+}
+
+function publicar() {
+  const animal = document.getElementById("animal").value;
+  const estado = document.getElementById("estado").value;
+  const telefono = document.getElementById("telefono").value;
+  const fotoInput = document.getElementById("foto");
+
+  if (!fotoInput.files[0] || !lat || !telefono) {
+    alert("Completá todos los campos");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function() {
+    const mascota = {
+      animal,
+      estado,
+      telefono,
+      lat,
+      lng,
+      foto: reader.result,
+      fecha: new Date().toLocaleDateString()
+    };
+
+    let datos = JSON.parse(localStorage.getItem("mascotas")) || [];
+    datos.unshift(mascota);
+    localStorage.setItem("mascotas", JSON.stringify(datos));
+    mostrar();
+  };
+
+  reader.readAsDataURL(fotoInput.files[0]);
+}
+
+function mostrar() {
+  const contenedor = document.getElementById("lista");
+  contenedor.innerHTML = "";
+
+  const datos = JSON.parse(localStorage.getItem("mascotas")) || [];
+
+  datos.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "card mascota " + (m.estado === "Perdido" ? "perdido" : "");
+
+    const maps = `https://www.google.com/maps?q=${m.lat},${m.lng}`;
+    const wa = `https://wa.me/54${m.telefono}`;
+
+    div.innerHTML = `
+      <strong>${m.animal}</strong><br>
+      <span class="estado">${m.estado}</span><br>
+      <small>${m.fecha}</small>
+      <img src="${m.foto}">
+      <div class="actions">
+        <a href="tel:${m.telefono}">📞 Llamar</a>
+        <a href="${wa}" target="_blank">💬 WhatsApp</a>
+        <a href="${maps}" target="_blank">📍 Ver ubicación</a>
+      </div>
+    `;
+    contenedor.appendChild(div);
+  });
+}
+
+mostrar();
+
+/* PWA: registrar Service Worker */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('Service Worker registrado'))
+    .catch(err => console.log('Error SW:', err));
+}
+</script>
+
+</body>
+</html>
