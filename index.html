@@ -164,7 +164,7 @@ button {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
-  query, where, orderBy, updateDoc, doc, serverTimestamp
+  updateDoc, doc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
   getStorage, ref, uploadBytes, getDownloadURL
@@ -225,17 +225,16 @@ window.publicar = async () => {
 };
 
 async function cargarAvisos() {
-  const q = query(
-    collection(db, "avisos"),
-    where("activo", "==", true),
-    orderBy("fecha", "desc")
-  );
+  const snap = await getDocs(collection(db, "avisos")); // trae todos los documentos
 
-  const snap = await getDocs(q);
-  feed.innerHTML = snap.empty ? "Todavía no hay avisos." : "";
+  const avisos = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(a => a.activo)  // filtramos activos
+    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis()); // ordenamos por fecha desc
 
-  snap.forEach(d => {
-    const a = d.data();
+  feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
+
+  avisos.forEach(a => {
     feed.innerHTML += `
       <div class="post">
         <strong>${a.tipo} · ${a.estado}</strong><br>
@@ -244,7 +243,7 @@ async function cargarAvisos() {
         ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
         <p>📞 ${a.telefono || ""}</p>
         <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
-        ${isAdmin ? `<button class="admin-btn" onclick="ocultar('${d.id}')">👁️ Ocultar</button>` : ""}
+        ${isAdmin ? `<button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>` : ""}
       </div>
     `;
   });
