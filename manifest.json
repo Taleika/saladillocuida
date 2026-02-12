@@ -1,21 +1,21 @@
 {
   "name": "Saladillo Cuida",
   "short_name": "Saladillo Cuida",
-  "description": "Mascotas perdidas y encontradas en Saladillo",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/saladillocuida/",
+  "start_url": "/saladillocuida/",
+  "scope": "/saladillocuida/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "/saladillocuida/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./icon-512.png",
+      "src": "/saladillocuida/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
