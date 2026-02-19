@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -16,6 +16,7 @@ label{ display:block; margin-top:10px; font-weight:bold;}
 input,select,textarea,button{ width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc;}
 button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 .post img{ width:100%; border-radius:10px; margin-top:10px;}
+.admin-btn{ background:#f44336; margin-top:8px;}
 .whatsapp-btn{ background:#25D366; margin-top:8px;}
 .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#4CAF50; color:white; padding:15px 20px; border-radius:25px; display:none;}
 #mapaCalor div{ font-size:13px;}
@@ -48,6 +49,7 @@ button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 </select>
 
 <label>Ubicación</label>
+<button onclick="usarUbicacion()">📍 Usar ubicación actual</button>
 <input type="text" id="ubicacion">
 
 <label>Teléfono</label>
@@ -69,7 +71,7 @@ button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 <div class="card">
 <h2>📊 Reportar animal en situación de calle</h2>
 
-<p id="contadorReportes"></p>
+<p id="contadorReportes">Cargando estadísticas...</p>
 <p id="desgloseTipos"></p>
 <p id="desgloseZonas"></p>
 <div id="mapaCalor"></div>
@@ -97,9 +99,8 @@ button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 <div class="toast" id="toast"></div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "TU_API_KEY",
@@ -110,77 +111,14 @@ projectId: "saladillo-cuida",
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let latReporte=null;
-let lngReporte=null;
+let latReporte = null;
+let lngReporte = null;
 
 function mostrarToast(t){
 toast.innerText=t;
 toast.style.display="block";
 setTimeout(()=>toast.style.display="none",3000);
 }
-
-////////////////////////////////////////
-// PUBLICAR AVISO
-////////////////////////////////////////
-
-window.publicar=async()=>{
-
-await addDoc(collection(db,"avisos"),{
-tipo:tipo.value,
-estado:estado.value,
-ubicacion:ubicacion.value,
-telefono:telefono.value,
-comentario:comentario.value,
-fecha:serverTimestamp()
-});
-
-mostrarToast("Aviso publicado");
-
-tipo.value="Perro";
-estado.value="Perdido";
-ubicacion.value="";
-telefono.value="";
-comentario.value="";
-
-cargarAvisos();
-};
-
-////////////////////////////////////////
-// CARGAR AVISOS
-////////////////////////////////////////
-
-async function cargarAvisos(){
-
-const q=query(collection(db,"avisos"),orderBy("fecha","desc"));
-const snap=await getDocs(q);
-
-feed.innerHTML="";
-
-if(snap.empty){
-feed.innerHTML="No hay avisos todavía.";
-return;
-}
-
-snap.forEach(doc=>{
-const a=doc.data();
-
-const card=document.createElement("div");
-card.className="post card";
-
-card.innerHTML=`
-<h3>${a.tipo} - ${a.estado}</h3>
-<p><strong>📍 ${a.ubicacion || "Sin ubicación"}</strong></p>
-<p>${a.comentario || ""}</p>
-${a.telefono ? `<a href="https://wa.me/54${a.telefono}" target="_blank"><button class="whatsapp-btn">Contactar por WhatsApp</button></a>` : ""}
-`;
-
-feed.appendChild(card);
-});
-}
-
-////////////////////////////////////////
-// UBICACIÓN REPORTE
-////////////////////////////////////////
 
 window.usarUbicacionReporte=()=>{
 navigator.geolocation.getCurrentPosition(p=>{
@@ -190,14 +128,22 @@ mostrarToast("Ubicación capturada");
 });
 };
 
-////////////////////////////////////////
-// ENVIAR REPORTE CON ANTI DUPLICADO
-////////////////////////////////////////
+window.publicar=async()=>{
+await addDoc(collection(db,"avisos"),{
+tipo:tipo.value,
+estado:estado.value,
+ubicacion:ubicacion.value,
+telefono:telefono.value,
+comentario:comentario.value,
+fecha:serverTimestamp()
+});
+mostrarToast("Aviso publicado");
+};
 
 window.enviarReporte=async()=>{
 
 if(!latReporte||!lngReporte){
-mostrarToast("Usá ubicación exacta");
+mostrarToast("Usá ubicación exacta para el reporte");
 return;
 }
 
@@ -214,7 +160,7 @@ r.zona===zonaReporte.value);
 });
 
 if(duplicado){
-mostrarToast("Ya existe reporte reciente en esa zona");
+mostrarToast("Ya existe un reporte reciente en esa zona");
 return;
 }
 
@@ -228,7 +174,6 @@ fecha:serverTimestamp()
 });
 
 mostrarToast("Reporte enviado");
-
 zonaReporte.value="";
 comentarioReporte.value="";
 latReporte=null;
@@ -237,12 +182,7 @@ lngReporte=null;
 cargarEstadisticas();
 };
 
-////////////////////////////////////////
-// ESTADÍSTICAS
-////////////////////////////////////////
-
 async function cargarEstadisticas(){
-
 const snap=await getDocs(collection(db,"reportes"));
 const reportes=snap.docs.map(d=>d.data());
 
@@ -258,22 +198,17 @@ contadorReportes.innerText=`📈 ${reportes.length} reportes registrados`;
 desgloseTipos.innerText=`🐶 ${perros} | 🐱 ${gatos}`;
 
 const top=Object.entries(zonas).sort((a,b)=>b[1]-a[1]);
-desgloseZonas.innerText="Zonas críticas: "+top.slice(0,5).map(z=>`${z[0]} (${z[1]})`).join(" | ");
+desgloseZonas.innerText="Zonas críticas: "+top.slice(0,5).map(z=>`${z[0]}(${z[1]})`).join(" | ");
 
 generarMapaCalor(zonas);
 }
 
 function generarMapaCalor(zonas){
-
 mapaCalor.innerHTML="";
-if(Object.keys(zonas).length===0) return;
-
-const max=Math.max(...Object.values(zonas));
-
+const max=Math.max(...Object.values(zonas),1);
 Object.entries(zonas).forEach(([z,c])=>{
 const intensidad=c/max;
 const rojo=Math.floor(255*intensidad);
-
 const div=document.createElement("div");
 div.style.background=`rgb(${rojo},50,50)`;
 div.style.color="white";
@@ -281,18 +216,11 @@ div.style.padding="5px";
 div.style.marginBottom="3px";
 div.style.borderRadius="5px";
 div.innerText=`${z} — ${c}`;
-
 mapaCalor.appendChild(div);
 });
 }
 
-////////////////////////////////////////
-// INIT
-////////////////////////////////////////
-
-cargarAvisos();
 cargarEstadisticas();
-
 </script>
 
 </body>
