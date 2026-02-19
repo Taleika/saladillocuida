@@ -1,4 +1,4 @@
-const CACHE_NAME = "saladillo-cuida-v2";
+const CACHE_NAME = "saladillo-cuida-v4";
 
 const urlsToCache = [
   "./",
