@@ -93,7 +93,8 @@ button {
   border-radius: 25px;
   display: none;
 }
-  /* Botón flotante PWA */
+
+/* Botón flotante PWA */
 .install-btn {
   display: none; /* aparece solo cuando es posible instalar */
   position: fixed;
@@ -193,6 +194,23 @@ button {
 <!-- AVISOS -->
 <div class="card">
 <h2>🐾 Avisos recientes</h2>
+
+<!-- FILTROS -->
+<label>Filtrar por tipo</label>
+<select id="filtroTipo">
+  <option value="">Todos</option>
+  <option>Perro</option>
+  <option>Gato</option>
+</select>
+
+<label>Filtrar por estado</label>
+<select id="filtroEstado">
+  <option value="">Todos</option>
+  <option>Perdido</option>
+  <option>Encontrado</option>
+  <option>En adopción</option>
+</select>
+
 <div id="feed">Cargando avisos...</div>
 </div>
 
@@ -369,7 +387,6 @@ window.enviarReporte = async () => {
   cargarEstadisticas();
 };
 
-  // 🔧 REGISTRO SERVICE WORKER (OBLIGATORIO PARA PWA)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js")
@@ -384,36 +401,55 @@ function mostrarToast(texto) {
   setTimeout(() => toast.style.display = "none", 3000);
 }
 
+// NUEVO: FILTROS
+const filtroTipo = document.getElementById("filtroTipo");
+const filtroEstado = document.getElementById("filtroEstado");
+let avisosCache = []; // guardamos todos los avisos para filtrar
+
 async function cargarAvisos() {
   const snap = await getDocs(collection(db, "avisos"));
 
-  const avisos = snap.docs
+  avisosCache = snap.docs
     .map(d => ({ id: d.id, ...d.data() }))
     .filter(a => a.activo)
     .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis());
 
-  feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
-
-  avisos.forEach(a => {
-    const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
-    const fechaStr = fecha.toLocaleString("es-AR");
-
-    feed.innerHTML += `
-      <div class="post">
-        <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
-        ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
-        ${a.foto ? `<img src="${a.foto}">` : ""}
-        ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
-        <p>📞 ${a.telefono || ""}</p>
-        <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
-        ${isAdmin ? `
-          <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
-          <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
-        ` : ""}
-      </div>
-    `;
-  });
+  mostrarAvisosFiltrados();
 }
+
+function mostrarAvisosFiltrados() {
+  const tipoSel = filtroTipo.value;
+  const estadoSel = filtroEstado.value;
+
+  feed.innerHTML = avisosCache.length === 0 ? "Todavía no hay avisos." : "";
+
+  avisosCache
+    .filter(a => (tipoSel === "" || a.tipo === tipoSel) &&
+                 (estadoSel === "" || a.estado === estadoSel))
+    .forEach(a => {
+      const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
+      const fechaStr = fecha.toLocaleString("es-AR");
+
+      feed.innerHTML += `
+        <div class="post">
+          <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
+          ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
+          ${a.foto ? `<img src="${a.foto}">` : ""}
+          ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
+          <p>📞 ${a.telefono || ""}</p>
+          <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
+          ${isAdmin ? `
+            <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
+            <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
+          ` : ""}
+        </div>
+      `;
+    });
+}
+
+// escuchamos cambios en los filtros
+filtroTipo.addEventListener("change", mostrarAvisosFiltrados);
+filtroEstado.addEventListener("change", mostrarAvisosFiltrados);
 
 async function cargarEstadisticas() {
   const snap = await getDocs(collection(db, "reportes"));
@@ -451,6 +487,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 
 cargarAvisos();
 cargarEstadisticas();
+
 // PWA INSTALL MODERNO
 let deferredPrompt;
 const installBtn = document.getElementById('btn-install');
@@ -458,7 +495,6 @@ const installBtn = document.getElementById('btn-install');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Mostrar el botón con animación
   installBtn.classList.add('show');
 });
 
