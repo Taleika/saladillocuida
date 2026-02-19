@@ -93,6 +93,47 @@ button {
   border-radius: 25px;
   display: none;
 }
+  /* Botón flotante PWA */
+.install-btn {
+  display: none; /* aparece solo cuando es posible instalar */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  background: #4CAF50;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Animación de entrada */
+.install-btn.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Efecto hover */
+.install-btn:hover {
+  background: #45a049;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+/* Solo mostrar en móviles */
+@media(min-width: 768px) {
+  .install-btn {
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 
@@ -195,6 +236,10 @@ Este reporte ayuda a generar estadísticas reales sobre animales en situación d
 </div>
 
 <div class="toast" id="toast">Mensaje</div>
+<!-- BOTÓN DE INSTALAR PWA ESTILIZADO -->
+<button id="btn-install" class="install-btn">
+  📥 Instalar App
+</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -406,6 +451,31 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 
 cargarAvisos();
 cargarEstadisticas();
+// PWA INSTALL MODERNO
+let deferredPrompt;
+const installBtn = document.getElementById('btn-install');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar el botón con animación
+  installBtn.classList.add('show');
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.classList.remove('show'); // ocultar con animación
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('Usuario aceptó instalar la app');
+    } else {
+      console.log('Usuario rechazó instalar la app');
+    }
+    deferredPrompt = null;
+  }
+});
+
 </script>
 
 </body>
