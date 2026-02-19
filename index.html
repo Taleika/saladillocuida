@@ -102,12 +102,6 @@ button {
   <img src="logosc.png" alt="Saladillo Cuida">
 </header>
 
-<div style="text-align:center; padding:10px;">
-  <button id="installBtnTop" style="display:none">
-    📲 Instalar Saladillo Cuida
-  </button>
-</div>
-
 <div class="container">
 
 <!-- PUBLICAR AVISO -->
@@ -161,9 +155,13 @@ button {
 <div id="feed">Cargando avisos...</div>
 </div>
 
-<!-- REPORTES CENSO -->
+<!-- REPORTES -->
 <div class="card">
 <h2>📊 Reportar animal en situación de calle</h2>
+
+<p id="contadorReportes" style="font-weight:bold; margin-bottom:10px;">
+Cargando estadísticas...
+</p>
 
 <p style="background:#fff3e0; padding:10px; border-radius:8px; font-size:14px;">
 Este reporte ayuda a generar estadísticas reales sobre animales en situación de calle en Saladillo.
@@ -273,6 +271,8 @@ window.enviarReporte = async () => {
   mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
   zonaReporte.value = "";
   comentarioReporte.value = "";
+
+  cargarEstadisticas();
 };
 
 function mostrarToast(texto) {
@@ -312,6 +312,14 @@ async function cargarAvisos() {
   });
 }
 
+async function cargarEstadisticas() {
+  const snap = await getDocs(collection(db, "reportes"));
+  const total = snap.size;
+
+  contadorReportes.innerText =
+    `📈 Actualmente hay ${total} reportes registrados en Saladillo.`;
+}
+
 window.ocultar = async id => {
   await updateDoc(doc(db, "avisos", id), { activo: false });
   cargarAvisos();
@@ -325,6 +333,7 @@ window.eliminar = async id => {
 };
 
 cargarAvisos();
+cargarEstadisticas();
 </script>
 
 </body>
