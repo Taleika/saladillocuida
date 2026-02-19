@@ -27,7 +27,7 @@ header img {
 .container {
   padding: 15px;
 }
- 
+
 .card {
   background: white;
   padding: 15px;
@@ -82,6 +82,10 @@ button {
   margin-top: 8px;
 }
 
+.reporte-btn {
+  background: #ff9800;
+}
+
 .toast {
   position: fixed;
   bottom: 20px;
@@ -102,24 +106,33 @@ button {
   <img src="logosc.png" alt="Saladillo Cuida">
 </header>
 
-<div style="text-align:center; padding:10px;">
-  <button id="installBtnTop" style="display:none">
-    📲 Instalar Saladillo Cuida
-  </button>
-</div>
-
 <div class="container">
 
+<!-- BOTÓN REPORTE -->
 <div class="card">
-  <button id="installBtn" style="display:none">📲 Instalar Saladillo Cuida</button>
+  <button class="reporte-btn" onclick="toggleReporte()">
+    🐕 Reportar animal en la vía pública
+  </button>
+
+  <div id="formReporte" style="display:none; margin-top:10px;">
+    <label>Foto (opcional)</label>
+    <input type="file" id="fotoReporte" accept="image/*">
+
+    <label>Ubicación</label>
+    <button onclick="usarUbicacionReporte()">📍 Usar ubicación actual</button>
+    <input type="text" id="ubicacionReporte" placeholder="Calle y altura">
+
+    <button onclick="enviarReporte()">Enviar reporte</button>
+  </div>
 </div>
 
+<!-- FORMULARIO ORIGINAL -->
 <div class="card">
 <h2>📍 Publicar mascota</h2>
 
-<!-- Leyenda adopción -->
 <p style="background:#e8f5e9; padding:10px; border-radius:8px; font-size:14px;">
-📌 La adopción es un acto de amor y compromiso. Asegurate de ofrecer un hogar responsable y seguro.</p>
+📌 Promovemos la adopción responsable, priorizando el bienestar y el compromiso hacia cada animal.
+</p>
 
 <label>Tipo</label>
 <select id="tipo">
@@ -135,11 +148,7 @@ button {
 </select>
 
 <label>Foto</label>
-<button onclick="camara.click()">📸 Sacar foto</button>
-<button onclick="galeria.click()">🖼️ Adjuntar foto</button>
-
-<input type="file" id="camara" accept="image/*" capture="environment" hidden>
-<input type="file" id="galeria" accept="image/*" hidden>
+<input type="file" id="camara" accept="image/*" capture="environment">
 
 <div class="preview">
   <img id="previewImg">
@@ -153,7 +162,7 @@ button {
 <input type="tel" id="telefono">
 
 <label>Comentario</label>
-<textarea id="comentario" rows="3" placeholder="Ej: Se escapó anoche, es manso..."></textarea>
+<textarea id="comentario" rows="3"></textarea>
 
 <button onclick="publicar()">Publicar aviso</button>
 </div>
@@ -163,9 +172,15 @@ button {
 <div id="feed">Cargando avisos...</div>
 </div>
 
+<!-- NUEVA SECCIÓN REPORTES -->
+<div class="card">
+<h2>🚨 Reportes de animales en la vía pública</h2>
+<div id="feedReportes">Cargando reportes...</div>
 </div>
 
-<div class="toast" id="toast">✅ Aviso publicado</div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -178,7 +193,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC8F48ib5OUrQZDThyUYPKBYQpNMO4d23Y",
+  apiKey: "AIza...",
   authDomain: "saladillo-cuida.firebaseapp.com",
   projectId: "saladillo-cuida",
   storageBucket: "saladillo-cuida.firebasestorage.app",
@@ -190,27 +205,20 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-const ADMIN_KEY = "saladillo2026";
-const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
-
 let archivoFoto = null;
-
-camara.onchange = galeria.onchange = e => {
+camara.onchange = e => {
   archivoFoto = e.target.files[0];
   previewImg.src = URL.createObjectURL(archivoFoto);
 };
 
 window.usarUbicacion = () => {
-  navigator.geolocation.getCurrentPosition(async p => {
-    const lat = p.coords.latitude;
-    const lng = p.coords.longitude;
-    ubicacion.value = `https://www.google.com/maps?q=${lat},${lng}`;
+  navigator.geolocation.getCurrentPosition(p => {
+    ubicacion.value = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
   });
 };
 
 window.publicar = async () => {
   let fotoURL = "";
-
   if (archivoFoto) {
     const r = ref(storage, "animals/" + Date.now());
     await uploadBytes(r, archivoFoto);
@@ -228,7 +236,7 @@ window.publicar = async () => {
     fecha: serverTimestamp()
   });
 
-  toast.innerText = "✅ Aviso publicado con éxito!";
+  toast.innerText = "✅ Aviso publicado";
   toast.style.display = "block";
   setTimeout(() => toast.style.display = "none", 3000);
 
@@ -237,74 +245,85 @@ window.publicar = async () => {
 
 async function cargarAvisos() {
   const snap = await getDocs(collection(db, "avisos"));
+  const avisos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  const avisos = snap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter(a => a.activo)
-    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis());
-
-  feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
+  feed.innerHTML = "";
 
   avisos.forEach(a => {
+    if (!a.activo) return;
+
     const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
-    const fechaStr = fecha.toLocaleString("es-AR", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit"
-    });
+    const fechaStr = fecha.toLocaleString("es-AR");
 
     feed.innerHTML += `
       <div class="post">
         <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
-        <small>
-          ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
-        </small>
+        ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver ubicación</a>` : ""}
         ${a.foto ? `<img src="${a.foto}">` : ""}
-        ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
-        <p>📞 ${a.telefono || ""}</p>
-        <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
-        ${isAdmin ? `
-          <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
-          <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
-        ` : ""}
+        ${a.comentario ? `<p>${a.comentario}</p>` : ""}
+        ${a.telefono ? `<p>📞 ${a.telefono}</p>` : ""}
       </div>
     `;
   });
 }
 
-window.ocultar = async id => {
-  await updateDoc(doc(db, "avisos", id), { activo: false });
-  cargarAvisos();
+window.toggleReporte = () => {
+  formReporte.style.display = formReporte.style.display === "none" ? "block" : "none";
 };
 
-window.eliminar = async id => {
-  if (confirm("¿Eliminar definitivamente este aviso? Esta acción no se puede deshacer.")) {
-    await deleteDoc(doc(db, "avisos", id));
-    cargarAvisos();
+window.usarUbicacionReporte = () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    ubicacionReporte.value = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+  });
+};
+
+window.enviarReporte = async () => {
+  let fotoURL = "";
+  const archivo = fotoReporte.files[0];
+
+  if (archivo) {
+    const r = ref(storage, "reportes/" + Date.now());
+    await uploadBytes(r, archivo);
+    fotoURL = await getDownloadURL(r);
   }
+
+  await addDoc(collection(db, "reportes"), {
+    foto: fotoURL,
+    ubicacion: ubicacionReporte.value,
+    fecha: serverTimestamp()
+  });
+
+  toast.innerText = "🚨 Reporte enviado";
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 3000);
+
+  cargarReportes();
+  formReporte.style.display = "none";
 };
 
-cargarAvisos();
+async function cargarReportes() {
+  const snap = await getDocs(collection(db, "reportes"));
+  const reportes = snap.docs.map(d => d.data());
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/saladillocuida/service-worker.js")
-    .then(() => console.log("SW registrado"))
-    .catch(err => console.log("Error SW:", err));
+  feedReportes.innerHTML = "";
+
+  reportes.forEach(r => {
+    const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date();
+    const fechaStr = fecha.toLocaleString("es-AR");
+
+    feedReportes.innerHTML += `
+      <div class="post">
+        <small>${fechaStr}</small><br>
+        ${r.ubicacion ? `<a href="${r.ubicacion}" target="_blank">📍 Ver ubicación</a>` : ""}
+        ${r.foto ? `<img src="${r.foto}">` : ""}
+      </div>
+    `;
+  });
 }
 
-let deferredPrompt;
-const installBtn = document.getElementById("installBtnTop");
+cargarAvisos();
+cargarReportes();
 
-window.addEventListener("beforeinstallprompt", e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = "block";
-});
-
-installBtn.onclick = async () => {
-  installBtn.style.display = "none";
-  await deferredPrompt.prompt();
-  deferredPrompt = null;
-};
 </script>
 
 </body>
