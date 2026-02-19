@@ -2,20 +2,20 @@
   "name": "Saladillo Cuida",
   "short_name": "Saladillo Cuida",
   "id": "/saladillocuida/",
-  "start_url": "/saladillocuida/",
-  "scope": "/saladillocuida/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/saladillocuida/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/saladillocuida/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
