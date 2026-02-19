@@ -176,6 +176,8 @@ Este reporte ayuda a generar estadísticas reales sobre animales en situación d
 <label>Zona / Barrio</label>
 <input type="text" id="zonaReporte" placeholder="Ej: Barrio 31, Av. Rivadavia y Mitre">
 
+<button onclick="usarUbicacionReporte()">📍 Usar ubicación exacta</button>
+
 <label>¿Se encuentra siempre en el lugar?</label>
 <select id="frecuenciaReporte">
   <option>Sí, vive en la zona</option>
@@ -221,6 +223,16 @@ const ADMIN_KEY = "saladillo2026";
 const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
 
 let archivoFoto = null;
+let latReporte = null;
+let lngReporte = null;
+
+window.usarUbicacionReporte = () => {
+  navigator.geolocation.getCurrentPosition(p => {
+    latReporte = p.coords.latitude;
+    lngReporte = p.coords.longitude;
+    mostrarToast("📍 Ubicación capturada");
+  });
+};
 
 camara.onchange = galeria.onchange = e => {
   archivoFoto = e.target.files[0];
@@ -260,17 +272,54 @@ window.publicar = async () => {
 };
 
 window.enviarReporte = async () => {
+
+  if (!latReporte || !lngReporte) {
+    mostrarToast("Usá ubicación exacta antes de enviar.");
+    return;
+  }
+
+  const snap = await getDocs(collection(db, "reportes"));
+  const ahora = Date.now();
+
+  const duplicado = snap.docs.some(d => {
+    const r = d.data();
+    if (!r.fecha || !r.lat || !r.lng) return false;
+
+    const fecha = r.fecha.toDate().getTime();
+    const distancia = calcularDistancia(
+      latReporte,
+      lngReporte,
+      r.lat,
+      r.lng
+    );
+
+    return (
+      ahora - fecha < 86400000 && // 24 horas
+      distancia < 0.03 // 30 metros aprox
+    );
+  });
+
+  if (duplicado) {
+    mostrarToast("⚠️ Ya existe un reporte reciente en este lugar.");
+    return;
+  }
+
   await addDoc(collection(db, "reportes"), {
     tipo: tipoReporte.value,
     zona: zonaReporte.value,
     frecuencia: frecuenciaReporte.value,
     comentario: comentarioReporte.value,
+    lat: latReporte,
+    lng: lngReporte,
     fecha: serverTimestamp()
   });
 
   mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
+
   zonaReporte.value = "";
   comentarioReporte.value = "";
+  latReporte = null;
+  lngReporte = null;
 
   cargarEstadisticas();
 };
@@ -331,6 +380,20 @@ window.eliminar = async id => {
     cargarAvisos();
   }
 };
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const R = 6371; // radio tierra km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // devuelve km
+}
 
 cargarAvisos();
 cargarEstadisticas();
