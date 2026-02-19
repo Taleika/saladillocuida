@@ -31,7 +31,6 @@ button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 
 <div class="container">
 
-<!-- PUBLICAR -->
 <div class="card">
 <h2>📍 Publicar mascota</h2>
 
@@ -61,13 +60,11 @@ button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
 <button onclick="publicar()">Publicar aviso</button>
 </div>
 
-<!-- AVISOS -->
 <div class="card">
 <h2>🐾 Avisos recientes</h2>
 <div id="feed">Cargando avisos...</div>
 </div>
 
-<!-- REPORTES -->
 <div class="card">
 <h2>📊 Reportar animal en situación de calle</h2>
 
@@ -221,6 +218,33 @@ mapaCalor.appendChild(div);
 }
 
 cargarEstadisticas();
+
+
+// 🔥 REGISTRO PROFESIONAL SERVICE WORKER
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/saladillocuida/service-worker.js")
+    .then(registration => {
+
+      registration.onupdatefound = () => {
+        const newWorker = registration.installing;
+
+        newWorker.onstatechange = () => {
+          if (newWorker.state === "installed") {
+            if (navigator.serviceWorker.controller) {
+              alert("Nueva versión disponible. La app se actualizará automáticamente.");
+              window.location.reload();
+            }
+          }
+        };
+      };
+
+    })
+    .catch(error => {
+      console.log("Error registrando Service Worker:", error);
+    });
+}
+
 </script>
 
 </body>
