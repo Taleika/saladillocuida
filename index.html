@@ -5,146 +5,58 @@
 <title>Saladillo Cuida</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4CAF50">
-<link rel="manifest" href="/saladillocuida/manifest.json">
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-}
-
-header {
-  background: #4CAF50;
-  padding: 10px;
-  text-align: center;
-}
-
-header img {
-  max-width: 100%;
-}
-
-.container {
-  padding: 15px;
-}
- 
-.card {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
-
-label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-input, select, textarea, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-textarea {
-  resize: none;
-}
-
-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.preview img, .post img {
-  width: 100%;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.post {
-  border-bottom: 1px solid #eee;
-  padding: 10px 0;
-}
-
-.admin-btn {
-  background: #f44336;
-  margin-top: 8px;
-}
-
-.whatsapp-btn {
-  background: #25D366;
-  margin-top: 8px;
-}
-
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #4CAF50;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 25px;
-  display: none;
-}
+body { margin:0; font-family:Arial; background:#f5f5f5; }
+header { background:#4CAF50; padding:10px; text-align:center; }
+header img { max-width:100%; }
+.container { padding:15px; }
+.card { background:white; padding:15px; border-radius:12px; margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+label{ display:block; margin-top:10px; font-weight:bold;}
+input,select,textarea,button{ width:100%; padding:10px; margin-top:5px; border-radius:8px; border:1px solid #ccc;}
+button{ background:#4CAF50; color:white; border:none; cursor:pointer;}
+.post img{ width:100%; border-radius:10px; margin-top:10px;}
+.admin-btn{ background:#f44336; margin-top:8px;}
+.whatsapp-btn{ background:#25D366; margin-top:8px;}
+.toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#4CAF50; color:white; padding:15px 20px; border-radius:25px; display:none;}
+#mapaCalor div{ font-size:13px;}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="logosc.png" alt="Saladillo Cuida">
+<img src="logosc.png" alt="Saladillo Cuida">
 </header>
 
 <div class="container">
 
-<!-- PUBLICAR AVISO -->
+<!-- PUBLICAR -->
 <div class="card">
 <h2>📍 Publicar mascota</h2>
 
-<p style="background:#e8f5e9; padding:10px; border-radius:8px; font-size:14px;">
-📌 Las publicaciones de adopción deben ser responsables y priorizar el bienestar animal.
-</p>
-
 <label>Tipo</label>
 <select id="tipo">
-  <option>Perro</option>
-  <option>Gato</option>
+<option>Perro</option>
+<option>Gato</option>
 </select>
 
 <label>Estado</label>
 <select id="estado">
-  <option>Perdido</option>
-  <option>Encontrado</option>
-  <option>En adopción</option>
+<option>Perdido</option>
+<option>Encontrado</option>
+<option>En adopción</option>
 </select>
-
-<label>Foto</label>
-<button onclick="camara.click()">📸 Sacar foto</button>
-<button onclick="galeria.click()">🖼️ Adjuntar foto</button>
-
-<input type="file" id="camara" accept="image/*" capture="environment" hidden>
-<input type="file" id="galeria" accept="image/*" hidden>
-
-<div class="preview">
-  <img id="previewImg">
-</div>
 
 <label>Ubicación</label>
 <button onclick="usarUbicacion()">📍 Usar ubicación actual</button>
-<input type="text" id="ubicacion" placeholder="Calle y altura">
+<input type="text" id="ubicacion">
 
 <label>Teléfono</label>
 <input type="tel" id="telefono">
 
 <label>Comentario</label>
-<textarea id="comentario" rows="3" placeholder="Ej: Se escapó anoche, es manso..."></textarea>
+<textarea id="comentario"></textarea>
 
 <button onclick="publicar()">Publicar aviso</button>
 </div>
@@ -159,32 +71,24 @@ button {
 <div class="card">
 <h2>📊 Reportar animal en situación de calle</h2>
 
-<p id="contadorReportes" style="font-weight:bold; margin-bottom:10px;">
-Cargando estadísticas...
-</p>
-
-<p style="background:#fff3e0; padding:10px; border-radius:8px; font-size:14px;">
-Este reporte ayuda a generar estadísticas reales sobre animales en situación de calle en Saladillo.
-</p>
+<p id="contadorReportes">Cargando estadísticas...</p>
+<p id="desgloseTipos"></p>
+<p id="desgloseZonas"></p>
+<div id="mapaCalor"></div>
 
 <label>Tipo</label>
 <select id="tipoReporte">
-  <option>Perro</option>
-  <option>Gato</option>
+<option>Perro</option>
+<option>Gato</option>
 </select>
 
 <label>Zona / Barrio</label>
-<input type="text" id="zonaReporte" placeholder="Ej: Barrio 31, Av. Rivadavia y Mitre">
+<input type="text" id="zonaReporte">
 
-<label>¿Se encuentra siempre en el lugar?</label>
-<select id="frecuenciaReporte">
-  <option>Sí, vive en la zona</option>
-  <option>Aparece ocasionalmente</option>
-  <option>No estoy seguro</option>
-</select>
+<button onclick="usarUbicacionReporte()">📍 Usar ubicación exacta</button>
 
-<label>Comentario adicional</label>
-<textarea id="comentarioReporte" rows="2"></textarea>
+<label>Comentario</label>
+<textarea id="comentarioReporte"></textarea>
 
 <button onclick="enviarReporte()">Enviar reporte</button>
 
@@ -192,147 +96,130 @@ Este reporte ayuda a generar estadísticas reales sobre animales en situación d
 
 </div>
 
-<div class="toast" id="toast">Mensaje</div>
+<div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, doc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "saladillo-cuida.firebaseapp.com",
-  projectId: "saladillo-cuida",
-  storageBucket: "saladillo-cuida.firebasestorage.app",
-  messagingSenderId: "728549842822",
-  appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
+apiKey: "TU_API_KEY",
+authDomain: "saladillo-cuida.firebaseapp.com",
+projectId: "saladillo-cuida",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-const ADMIN_KEY = "saladillo2026";
-const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
+let latReporte = null;
+let lngReporte = null;
 
-let archivoFoto = null;
-
-camara.onchange = galeria.onchange = e => {
-  archivoFoto = e.target.files[0];
-  previewImg.src = URL.createObjectURL(archivoFoto);
-};
-
-window.usarUbicacion = () => {
-  navigator.geolocation.getCurrentPosition(p => {
-    const lat = p.coords.latitude;
-    const lng = p.coords.longitude;
-    ubicacion.value = `https://www.google.com/maps?q=${lat},${lng}`;
-  });
-};
-
-window.publicar = async () => {
-  let fotoURL = "";
-
-  if (archivoFoto) {
-    const r = ref(storage, "animals/" + Date.now());
-    await uploadBytes(r, archivoFoto);
-    fotoURL = await getDownloadURL(r);
-  }
-
-  await addDoc(collection(db, "avisos"), {
-    tipo: tipo.value,
-    estado: estado.value,
-    ubicacion: ubicacion.value,
-    telefono: telefono.value,
-    comentario: comentario.value,
-    foto: fotoURL,
-    activo: true,
-    fecha: serverTimestamp()
-  });
-
-  mostrarToast("✅ Aviso publicado con éxito!");
-  cargarAvisos();
-};
-
-window.enviarReporte = async () => {
-  await addDoc(collection(db, "reportes"), {
-    tipo: tipoReporte.value,
-    zona: zonaReporte.value,
-    frecuencia: frecuenciaReporte.value,
-    comentario: comentarioReporte.value,
-    fecha: serverTimestamp()
-  });
-
-  mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
-  zonaReporte.value = "";
-  comentarioReporte.value = "";
-
-  cargarEstadisticas();
-};
-
-function mostrarToast(texto) {
-  toast.innerText = texto;
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
+function mostrarToast(t){
+toast.innerText=t;
+toast.style.display="block";
+setTimeout(()=>toast.style.display="none",3000);
 }
 
-async function cargarAvisos() {
-  const snap = await getDocs(collection(db, "avisos"));
-
-  const avisos = snap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter(a => a.activo)
-    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis());
-
-  feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
-
-  avisos.forEach(a => {
-    const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
-    const fechaStr = fecha.toLocaleString("es-AR");
-
-    feed.innerHTML += `
-      <div class="post">
-        <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
-        ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
-        ${a.foto ? `<img src="${a.foto}">` : ""}
-        ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
-        <p>📞 ${a.telefono || ""}</p>
-        <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
-        ${isAdmin ? `
-          <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
-          <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
-        ` : ""}
-      </div>
-    `;
-  });
-}
-
-async function cargarEstadisticas() {
-  const snap = await getDocs(collection(db, "reportes"));
-  const total = snap.size;
-
-  contadorReportes.innerText =
-    `📈 Actualmente hay ${total} reportes registrados en Saladillo.`;
-}
-
-window.ocultar = async id => {
-  await updateDoc(doc(db, "avisos", id), { activo: false });
-  cargarAvisos();
+window.usarUbicacionReporte=()=>{
+navigator.geolocation.getCurrentPosition(p=>{
+latReporte=p.coords.latitude;
+lngReporte=p.coords.longitude;
+mostrarToast("Ubicación capturada");
+});
 };
 
-window.eliminar = async id => {
-  if (confirm("¿Eliminar definitivamente este aviso?")) {
-    await deleteDoc(doc(db, "avisos", id));
-    cargarAvisos();
-  }
+window.publicar=async()=>{
+await addDoc(collection(db,"avisos"),{
+tipo:tipo.value,
+estado:estado.value,
+ubicacion:ubicacion.value,
+telefono:telefono.value,
+comentario:comentario.value,
+fecha:serverTimestamp()
+});
+mostrarToast("Aviso publicado");
 };
 
-cargarAvisos();
+window.enviarReporte=async()=>{
+
+if(!latReporte||!lngReporte){
+mostrarToast("Usá ubicación exacta para el reporte");
+return;
+}
+
+const snap=await getDocs(collection(db,"reportes"));
+const ahora=Date.now();
+
+const duplicado=snap.docs.some(d=>{
+const r=d.data();
+if(!r.fecha) return false;
+const fecha=r.fecha.toDate().getTime();
+return (ahora-fecha<86400000 &&
+r.tipo===tipoReporte.value &&
+r.zona===zonaReporte.value);
+});
+
+if(duplicado){
+mostrarToast("Ya existe un reporte reciente en esa zona");
+return;
+}
+
+await addDoc(collection(db,"reportes"),{
+tipo:tipoReporte.value,
+zona:zonaReporte.value,
+comentario:comentarioReporte.value,
+lat:latReporte,
+lng:lngReporte,
+fecha:serverTimestamp()
+});
+
+mostrarToast("Reporte enviado");
+zonaReporte.value="";
+comentarioReporte.value="";
+latReporte=null;
+lngReporte=null;
+
+cargarEstadisticas();
+};
+
+async function cargarEstadisticas(){
+const snap=await getDocs(collection(db,"reportes"));
+const reportes=snap.docs.map(d=>d.data());
+
+let perros=0,gatos=0,zonas={};
+
+reportes.forEach(r=>{
+if(r.tipo==="Perro")perros++;
+if(r.tipo==="Gato")gatos++;
+if(r.zona)zonas[r.zona]=(zonas[r.zona]||0)+1;
+});
+
+contadorReportes.innerText=`📈 ${reportes.length} reportes registrados`;
+desgloseTipos.innerText=`🐶 ${perros} | 🐱 ${gatos}`;
+
+const top=Object.entries(zonas).sort((a,b)=>b[1]-a[1]);
+desgloseZonas.innerText="Zonas críticas: "+top.slice(0,5).map(z=>`${z[0]}(${z[1]})`).join(" | ");
+
+generarMapaCalor(zonas);
+}
+
+function generarMapaCalor(zonas){
+mapaCalor.innerHTML="";
+const max=Math.max(...Object.values(zonas),1);
+Object.entries(zonas).forEach(([z,c])=>{
+const intensidad=c/max;
+const rojo=Math.floor(255*intensidad);
+const div=document.createElement("div");
+div.style.background=`rgb(${rojo},50,50)`;
+div.style.color="white";
+div.style.padding="5px";
+div.style.marginBottom="3px";
+div.style.borderRadius="5px";
+div.innerText=`${z} — ${c}`;
+mapaCalor.appendChild(div);
+});
+}
+
 cargarEstadisticas();
 </script>
 
