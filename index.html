@@ -27,7 +27,7 @@ header img {
 .container {
   padding: 15px;
 }
-
+ 
 .card {
   background: white;
   padding: 15px;
@@ -82,10 +82,6 @@ button {
   margin-top: 8px;
 }
 
-.reporte-btn {
-  background: #ff9800;
-}
-
 .toast {
   position: fixed;
   bottom: 20px;
@@ -106,32 +102,20 @@ button {
   <img src="logosc.png" alt="Saladillo Cuida">
 </header>
 
-<div class="container">
-
-<!-- BOTÓN REPORTE -->
-<div class="card">
-  <button class="reporte-btn" onclick="toggleReporte()">
-    🐕 Reportar animal en la vía pública
+<div style="text-align:center; padding:10px;">
+  <button id="installBtnTop" style="display:none">
+    📲 Instalar Saladillo Cuida
   </button>
-
-  <div id="formReporte" style="display:none; margin-top:10px;">
-    <label>Foto (opcional)</label>
-    <input type="file" id="fotoReporte" accept="image/*">
-
-    <label>Ubicación</label>
-    <button onclick="usarUbicacionReporte()">📍 Usar ubicación actual</button>
-    <input type="text" id="ubicacionReporte" placeholder="Calle y altura">
-
-    <button onclick="enviarReporte()">Enviar reporte</button>
-  </div>
 </div>
 
-<!-- FORMULARIO ORIGINAL -->
+<div class="container">
+
+<!-- PUBLICAR AVISO -->
 <div class="card">
 <h2>📍 Publicar mascota</h2>
 
 <p style="background:#e8f5e9; padding:10px; border-radius:8px; font-size:14px;">
-📌 Promovemos la adopción responsable, priorizando el bienestar y el compromiso hacia cada animal.
+📌 Las publicaciones de adopción deben ser responsables y priorizar el bienestar animal.
 </p>
 
 <label>Tipo</label>
@@ -148,7 +132,11 @@ button {
 </select>
 
 <label>Foto</label>
-<input type="file" id="camara" accept="image/*" capture="environment">
+<button onclick="camara.click()">📸 Sacar foto</button>
+<button onclick="galeria.click()">🖼️ Adjuntar foto</button>
+
+<input type="file" id="camara" accept="image/*" capture="environment" hidden>
+<input type="file" id="galeria" accept="image/*" hidden>
 
 <div class="preview">
   <img id="previewImg">
@@ -162,25 +150,51 @@ button {
 <input type="tel" id="telefono">
 
 <label>Comentario</label>
-<textarea id="comentario" rows="3"></textarea>
+<textarea id="comentario" rows="3" placeholder="Ej: Se escapó anoche, es manso..."></textarea>
 
 <button onclick="publicar()">Publicar aviso</button>
 </div>
 
+<!-- AVISOS -->
 <div class="card">
 <h2>🐾 Avisos recientes</h2>
 <div id="feed">Cargando avisos...</div>
 </div>
 
-<!-- NUEVA SECCIÓN REPORTES -->
+<!-- REPORTES CENSO -->
 <div class="card">
-<h2>🚨 Reportes de animales en la vía pública</h2>
-<div id="feedReportes">Cargando reportes...</div>
-</div>
+<h2>📊 Reportar animal en situación de calle</h2>
+
+<p style="background:#fff3e0; padding:10px; border-radius:8px; font-size:14px;">
+Este reporte ayuda a generar estadísticas reales sobre animales en situación de calle en Saladillo.
+</p>
+
+<label>Tipo</label>
+<select id="tipoReporte">
+  <option>Perro</option>
+  <option>Gato</option>
+</select>
+
+<label>Zona / Barrio</label>
+<input type="text" id="zonaReporte" placeholder="Ej: Barrio 31, Av. Rivadavia y Mitre">
+
+<label>¿Se encuentra siempre en el lugar?</label>
+<select id="frecuenciaReporte">
+  <option>Sí, vive en la zona</option>
+  <option>Aparece ocasionalmente</option>
+  <option>No estoy seguro</option>
+</select>
+
+<label>Comentario adicional</label>
+<textarea id="comentarioReporte" rows="2"></textarea>
+
+<button onclick="enviarReporte()">Enviar reporte</button>
 
 </div>
 
-<div class="toast" id="toast"></div>
+</div>
+
+<div class="toast" id="toast">Mensaje</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -193,7 +207,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIza...",
+  apiKey: "TU_API_KEY",
   authDomain: "saladillo-cuida.firebaseapp.com",
   projectId: "saladillo-cuida",
   storageBucket: "saladillo-cuida.firebasestorage.app",
@@ -205,20 +219,27 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+const ADMIN_KEY = "saladillo2026";
+const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
+
 let archivoFoto = null;
-camara.onchange = e => {
+
+camara.onchange = galeria.onchange = e => {
   archivoFoto = e.target.files[0];
   previewImg.src = URL.createObjectURL(archivoFoto);
 };
 
 window.usarUbicacion = () => {
   navigator.geolocation.getCurrentPosition(p => {
-    ubicacion.value = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+    const lat = p.coords.latitude;
+    const lng = p.coords.longitude;
+    ubicacion.value = `https://www.google.com/maps?q=${lat},${lng}`;
   });
 };
 
 window.publicar = async () => {
   let fotoURL = "";
+
   if (archivoFoto) {
     const r = ref(storage, "animals/" + Date.now());
     await uploadBytes(r, archivoFoto);
@@ -236,94 +257,74 @@ window.publicar = async () => {
     fecha: serverTimestamp()
   });
 
-  toast.innerText = "✅ Aviso publicado";
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
-
+  mostrarToast("✅ Aviso publicado con éxito!");
   cargarAvisos();
 };
 
+window.enviarReporte = async () => {
+  await addDoc(collection(db, "reportes"), {
+    tipo: tipoReporte.value,
+    zona: zonaReporte.value,
+    frecuencia: frecuenciaReporte.value,
+    comentario: comentarioReporte.value,
+    fecha: serverTimestamp()
+  });
+
+  mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
+  zonaReporte.value = "";
+  comentarioReporte.value = "";
+};
+
+function mostrarToast(texto) {
+  toast.innerText = texto;
+  toast.style.display = "block";
+  setTimeout(() => toast.style.display = "none", 3000);
+}
+
 async function cargarAvisos() {
   const snap = await getDocs(collection(db, "avisos"));
-  const avisos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  feed.innerHTML = "";
+  const avisos = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(a => a.activo)
+    .sort((a, b) => b.fecha?.toMillis() - a.fecha?.toMillis());
+
+  feed.innerHTML = avisos.length === 0 ? "Todavía no hay avisos." : "";
 
   avisos.forEach(a => {
-    if (!a.activo) return;
-
     const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
     const fechaStr = fecha.toLocaleString("es-AR");
 
     feed.innerHTML += `
       <div class="post">
         <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
-        ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver ubicación</a>` : ""}
+        ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
         ${a.foto ? `<img src="${a.foto}">` : ""}
-        ${a.comentario ? `<p>${a.comentario}</p>` : ""}
-        ${a.telefono ? `<p>📞 ${a.telefono}</p>` : ""}
+        ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
+        <p>📞 ${a.telefono || ""}</p>
+        <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
+        ${isAdmin ? `
+          <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
+          <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
+        ` : ""}
       </div>
     `;
   });
 }
 
-window.toggleReporte = () => {
-  formReporte.style.display = formReporte.style.display === "none" ? "block" : "none";
+window.ocultar = async id => {
+  await updateDoc(doc(db, "avisos", id), { activo: false });
+  cargarAvisos();
 };
 
-window.usarUbicacionReporte = () => {
-  navigator.geolocation.getCurrentPosition(p => {
-    ubicacionReporte.value = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-  });
-};
-
-window.enviarReporte = async () => {
-  let fotoURL = "";
-  const archivo = fotoReporte.files[0];
-
-  if (archivo) {
-    const r = ref(storage, "reportes/" + Date.now());
-    await uploadBytes(r, archivo);
-    fotoURL = await getDownloadURL(r);
+window.eliminar = async id => {
+  if (confirm("¿Eliminar definitivamente este aviso?")) {
+    await deleteDoc(doc(db, "avisos", id));
+    cargarAvisos();
   }
-
-  await addDoc(collection(db, "reportes"), {
-    foto: fotoURL,
-    ubicacion: ubicacionReporte.value,
-    fecha: serverTimestamp()
-  });
-
-  toast.innerText = "🚨 Reporte enviado";
-  toast.style.display = "block";
-  setTimeout(() => toast.style.display = "none", 3000);
-
-  cargarReportes();
-  formReporte.style.display = "none";
 };
-
-async function cargarReportes() {
-  const snap = await getDocs(collection(db, "reportes"));
-  const reportes = snap.docs.map(d => d.data());
-
-  feedReportes.innerHTML = "";
-
-  reportes.forEach(r => {
-    const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date();
-    const fechaStr = fecha.toLocaleString("es-AR");
-
-    feedReportes.innerHTML += `
-      <div class="post">
-        <small>${fechaStr}</small><br>
-        ${r.ubicacion ? `<a href="${r.ubicacion}" target="_blank">📍 Ver ubicación</a>` : ""}
-        ${r.foto ? `<img src="${r.foto}">` : ""}
-      </div>
-    `;
-  });
-}
 
 cargarAvisos();
-cargarReportes();
-
 </script>
 
 </body>
