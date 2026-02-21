@@ -8,6 +8,110 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
+
+/* Botón flotante PWA */
+.install-btn {
+  display: none; /* aparece solo cuando es posible instalar */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  background: #4CAF50;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Animación de entrada */
+.install-btn.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Efecto hover */
+.install-btn:hover {
+  background: #45a049;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+/* Solo mostrar en móviles */
+@media(min-width: 768px) {
+  .install-btn {
+    display: none !important;
+  }
+}
+/* ============================= */
+/* MEJORAS VISUALES NO INTRUSIVAS */
+/* ============================= */
+
+:root{
+  --verde:#4CAF50;
+  --verde-oscuro:#3d9440;
+  --gris-bg:#f4f6f8;
+  --card:#ffffff;
+  --sombra:0 6px 18px rgba(0,0,0,.08);
+}
+
+body{
+  background:var(--gris-bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+
+.card{
+  border-radius:16px;
+  box-shadow:var(--sombra);
+  transition:.25s ease;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+}
+
+h2{
+  margin-top:0;
+  font-size:20px;
+}
+
+button{
+  font-weight:600;
+  transition:.2s ease;
+}
+
+button:hover{
+  transform:scale(1.02);
+}
+
+.post{
+  padding:15px 0;
+}
+
+.post strong{
+  font-size:15px;
+}
+
+.post small{
+  color:#777;
+}
+
+input:focus, select:focus, textarea:focus{
+  outline:none;
+  border:1px solid var(--verde);
+  box-shadow:0 0 0 2px rgba(76,175,80,.15);
+}
+
+.toast{
+  box-shadow:var(--sombra);
+  font-weight:600;
+}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -93,45 +197,64 @@ button {
   border-radius: 25px;
   display: none;
 }
+	/* ============================= */
+/* MEJORAS VISUALES PRO */
+/* ============================= */
 
-/* Botón flotante PWA */
-.install-btn {
-  display: none; /* aparece solo cuando es posible instalar */
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  background: #4CAF50;
-  color: white;
-  font-size: 16px;
+/* Badges por estado */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: bold;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 1000;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  color: white;
+  margin-right: 6px;
 }
 
-/* Animación de entrada */
-.install-btn.show {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
+.badge.perdido { background: #e53935; }
+.badge.encontrado { background: #1e88e5; }
+.badge.adopcion { background: #8e24aa; }
+
+/* Animación suave al aparecer */
+.post {
+  animation: fadeUp .4s ease;
 }
 
-/* Efecto hover */
-.install-btn:hover {
-  background: #45a049;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Solo mostrar en móviles */
-@media(min-width: 768px) {
-  .install-btn {
-    display: none !important;
+/* Mejor separación visual */
+.post {
+  padding: 15px 0;
+}
+
+/* Modo oscuro automático */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #e0e0e0;
+  }
+
+  .card {
+    background: #1e1e1e;
+    box-shadow: 0 4px 14px rgba(0,0,0,.5);
+  }
+
+  input, select, textarea {
+    background: #2a2a2a;
+    color: white;
+    border: 1px solid #444;
+  }
+
+  .post {
+    border-bottom: 1px solid #333;
+  }
+
+  .toast {
+    background: #2e7d32;
   }
 }
 
@@ -331,7 +454,9 @@ window.publicar = async () => {
   });
 
   mostrarToast("✅ Aviso publicado con éxito!");
-  cargarAvisos();
+  
+
+	cargarAvisos();
 };
 
 window.enviarReporte = async () => {
@@ -431,13 +556,23 @@ function mostrarAvisosFiltrados() {
       const fechaStr = fecha.toLocaleString("es-AR");
 
       feed.innerHTML += `
-        <div class="post">
-          <strong>${a.tipo} · ${a.estado}</strong> · <small>${fechaStr}</small><br>
+  <div class="post">
+    <strong>${a.tipo}</strong>
+    <span class="badge ${
+      a.estado === "Perdido" ? "perdido" :
+      a.estado === "Encontrado" ? "encontrado" :
+      "adopcion"
+    }">
+      ${a.estado}
+    </span>
+    · <small>${fechaStr}</small><br>
           ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
           ${a.foto ? `<img src="${a.foto}">` : ""}
           ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
           <p>📞 ${a.telefono || ""}</p>
           <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
+<button onclick="compartirAviso('${a.id}')">📤 Compartir</button>
+
           ${isAdmin ? `
             <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
             <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
@@ -485,6 +620,40 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   return R * c; // devuelve km
 }
 
+// 🔗 COMPARTIR AVISOS
+window.compartirAviso = async (id) => {
+  const aviso = avisosCache.find(a => a.id === id);
+  if (!aviso) return;
+
+  const texto =
+`🐾 ${aviso.tipo} - ${aviso.estado}
+
+${aviso.comentario || ""}
+
+📍 ${aviso.ubicacion || "Ubicación no especificada"}
+
+Publicado en Saladillo Cuida`;
+
+  const url = "https://taleika.github.io/saladillocuida/";
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Saladillo Cuida",
+        text: texto,
+        url: url
+      });
+    } catch (err) {
+      console.log("Error al compartir:", err);
+    }
+  } else {
+    const whatsappURL =
+      `https://wa.me/?text=${encodeURIComponent(texto + "\n" + url)}`;
+    window.open(whatsappURL, "_blank");
+  }
+};
+
+	
 cargarAvisos();
 cargarEstadisticas();
 
