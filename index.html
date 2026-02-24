@@ -8,6 +8,8 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 
 /* Botón flotante PWA */
 .install-btn {
@@ -59,11 +61,12 @@
   --gris-bg:#f4f6f8;
   --card:#ffffff;
   --sombra:0 6px 18px rgba(0,0,0,.08);
+  --fuente-principal:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 }
 
 body{
   background:var(--gris-bg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-family:var(--fuente-principal);
 }
 
 .card{
@@ -114,7 +117,7 @@ input:focus, select:focus, textarea:focus{
 }
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: var(--fuente-principal);
   background: #f5f5f5;
 }
 
@@ -147,6 +150,7 @@ label {
 }
 
 input, select, textarea, button {
+  font-family: inherit;
   width: 100%;
   padding: 10px;
   margin-top: 5px;
@@ -196,6 +200,61 @@ button {
   padding: 15px 20px;
   border-radius: 25px;
   display: none;
+}
+
+.quick-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.quick-action-btn {
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 18px 14px;
+  text-align: left;
+}
+
+.quick-action-btn small {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+.btn-perdido { background: #e53935; }
+.btn-encontrado { background: #1e88e5; }
+.btn-adopcion { background: #8e24aa; }
+.btn-quiero-adoptar { background: #5e1680; }
+.btn-ver-avisos { background: #546e7a; }
+.btn-reportar-calle { background: #00695c; }
+
+.publish-success {
+  display: none;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #2e7d32;
+  background: #e8f5e9;
+  color: #1b5e20;
+  text-align: center;
+}
+
+.publish-success strong {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.focus-publish {
+  box-shadow: 0 0 0 3px rgba(76,175,80,.25), var(--sombra);
+}
+
+.focus-avisos {
+  box-shadow: 0 0 0 3px rgba(84,110,122,.25), var(--sombra);
 }
 	/* ============================= */
 /* MEJORAS VISUALES PRO */
@@ -269,8 +328,38 @@ button {
 
 <div class="container">
 
-<!-- PUBLICAR AVISO -->
 <div class="card">
+  <h2>🚀 ¿Qué necesitás hacer hoy?</h2>
+  <div class="quick-actions">
+    <button class="quick-action-btn btn-perdido" onclick="irAPublicar('Perdido')">
+      1) Perdí a mi mascota
+      <small>Publicá rápido con estado "Perdido".</small>
+    </button>
+    <button class="quick-action-btn btn-encontrado" onclick="irAPublicar('Encontrado')">
+      2) Encontré una mascota
+      <small>Cargá el aviso para ubicar a su familia.</small>
+    </button>
+    <button class="quick-action-btn btn-adopcion" onclick="irAPublicar('En adopción')">
+      3) Busca Familia
+      <small>Publicá para adopción responsable.</small>
+    </button>
+    <button class="quick-action-btn btn-quiero-adoptar" onclick="verAdopciones()">
+      4) Quiero adoptar
+      <small>Te mostramos solo los avisos en adopción.</small>
+    </button>
+    <button class="quick-action-btn btn-ver-avisos" onclick="irAAvisos()">
+      5) Ver avisos
+      <small>Ir directo al listado completo de avisos recientes.</small>
+    </button>
+    <button class="quick-action-btn btn-reportar-calle" onclick="irAReportes()">
+      6) Reportar animal en la calle
+      <small>Tu reporte ayuda a conocer la realidad de los animales en la calle.</small>
+    </button>
+  </div>
+</div>
+
+<!-- PUBLICAR AVISO -->
+<div class="card" id="publicarCard">
 <h2>📍 Publicar mascota</h2>
 
 <p style="background:#e8f5e9; padding:10px; border-radius:8px; font-size:14px;">
@@ -311,11 +400,16 @@ button {
 <label>Comentario</label>
 <textarea id="comentario" rows="3" placeholder="Ej: Se escapó anoche, es manso..."></textarea>
 
-<button onclick="publicar()">Publicar aviso</button>
+<button onclick="publicar()" id="btnPublicarAviso">Publicar aviso</button>
+
+<div class="publish-success" id="cartelPublicado">
+  <strong>✅ ¡PUBLICADO!</strong>
+  Tu aviso ya fue cargado. Revisá abajo en <b>Avisos recientes</b> antes de volver a publicar.
+</div>
 </div>
 
 <!-- AVISOS -->
-<div class="card">
+<div class="card" id="avisosCard">
 <h2>🐾 Avisos recientes</h2>
 
 <!-- FILTROS -->
@@ -338,7 +432,7 @@ button {
 </div>
 
 <!-- REPORTES -->
-<div class="card">
+<div class="card" id="reportesCard">
 <h2>📊 Reportar animal en situación de calle</h2>
 
 <p id="contadorReportes" style="font-weight:bold; margin-bottom:10px;">
@@ -374,6 +468,24 @@ Este reporte ayuda a generar estadísticas reales sobre animales en situación d
 
 </div>
 
+
+<div style="
+  margin-top:40px;
+  padding-top:20px;
+  font-size:13px;
+  color:#777;
+  text-align:center;
+  border-top:1px solid #eee;
+">
+  <p style="margin:4px 0;">
+    Esta aplicación fue desarrollada de forma gratuita por Fernando Pacheco
+    como una herramienta abierta para la comunidad de Saladillo.
+  </p>
+  <p style="margin:4px 0;">
+    Proyecto independiente. No pertenece a ningún organismo oficial.
+  </p>
+</div>
+
 </div>
 
 <div class="toast" id="toast">Mensaje</div>
@@ -391,6 +503,9 @@ import {
 import {
   getStorage, ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import {
+  getAnalytics, isSupported, logEvent
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
 const firebaseConfig = {
   apiKey: "TU_API_KEY",
@@ -398,12 +513,29 @@ const firebaseConfig = {
   projectId: "saladillo-cuida",
   storageBucket: "saladillo-cuida.firebasestorage.app",
   messagingSenderId: "728549842822",
-  appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
+  appId: "1:728549842822:web:e4fdf5e08d915e9461d607",
+  measurementId: "G-XXXXXXXXXX" // Reemplazá con tu Measurement ID real
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+let analytics = null;
+
+async function iniciarAnalytics() {
+  try {
+    const soportado = await isSupported();
+    if (!soportado) return;
+
+    analytics = getAnalytics(app);
+    logEvent(analytics, "app_open");
+  } catch (err) {
+    console.log("Analytics no disponible:", err);
+  }
+}
+
+iniciarAnalytics();
 
 const ADMIN_KEY = "saladillo2026";
 const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
@@ -434,32 +566,99 @@ window.usarUbicacion = () => {
 };
 
 window.publicar = async () => {
-  let fotoURL = "";
+  if (analytics) logEvent(analytics, "inicio_publicacion");
+  btnPublicarAviso.disabled = true;
+  btnPublicarAviso.innerText = "Publicando...";
 
-  if (archivoFoto) {
-    const r = ref(storage, "animals/" + Date.now());
-    await uploadBytes(r, archivoFoto);
-    fotoURL = await getDownloadURL(r);
-  }
+  try {
+    let fotoURL = "";
 
-  await addDoc(collection(db, "avisos"), {
-    tipo: tipo.value,
-    estado: estado.value,
-    ubicacion: ubicacion.value,
-    telefono: telefono.value,
-    comentario: comentario.value,
-    foto: fotoURL,
-    activo: true,
-    fecha: serverTimestamp()
-  });
+    if (archivoFoto) {
+      const r = ref(storage, "animals/" + Date.now());
+      await uploadBytes(r, archivoFoto);
+      fotoURL = await getDownloadURL(r);
+    }
 
-  mostrarToast("✅ Aviso publicado con éxito!");
-  
+    await addDoc(collection(db, "avisos"), {
+      tipo: tipo.value,
+      estado: estado.value,
+      ubicacion: ubicacion.value,
+      telefono: telefono.value,
+      comentario: comentario.value,
+      foto: fotoURL,
+      activo: true,
+      fecha: serverTimestamp()
+    });
+
+    mostrarToast("✅ Aviso publicado con éxito!");
+    if (analytics) logEvent(analytics, "aviso_publicado", { estado: estado.value, tipo: tipo.value });
+    cartelPublicado.style.display = "block";
+
+    setTimeout(() => {
+      cartelPublicado.style.display = "none";
+    }, 6000);
+
+    comentario.value = "";
+    ubicacion.value = "";
+    telefono.value = "";
+    previewImg.src = "";
+    archivoFoto = null;
 
 	cargarAvisos();
+  } finally {
+    btnPublicarAviso.disabled = false;
+    btnPublicarAviso.innerText = "Publicar aviso";
+  }
+};
+
+window.irAPublicar = (estadoSeleccionado) => {
+  estado.value = estadoSeleccionado;
+  publicarCard.classList.add("focus-publish");
+  publicarCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  mostrarToast(`Listo: aviso marcado como \"${estadoSeleccionado}\".`);
+
+  setTimeout(() => {
+    publicarCard.classList.remove("focus-publish");
+  }, 1800);
+};
+
+
+window.verAdopciones = () => {
+  filtroEstado.value = "En adopción";
+  mostrarAvisosFiltrados();
+  avisosCard.classList.add("focus-avisos");
+  avisosCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  mostrarToast("Mostrando avisos en adopción.");
+
+  setTimeout(() => {
+    avisosCard.classList.remove("focus-avisos");
+  }, 1800);
+};
+
+window.irAAvisos = () => {
+  filtroTipo.value = "";
+  filtroEstado.value = "";
+  mostrarAvisosFiltrados();
+  avisosCard.classList.add("focus-avisos");
+  avisosCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  setTimeout(() => {
+    avisosCard.classList.remove("focus-avisos");
+  }, 1800);
+};
+
+
+window.irAReportes = () => {
+  reportesCard.classList.add("focus-avisos");
+  reportesCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  setTimeout(() => {
+    reportesCard.classList.remove("focus-avisos");
+  }, 1800);
 };
 
 window.enviarReporte = async () => {
+  if (analytics) logEvent(analytics, "inicio_reporte_calle");
 
   if (!latReporte || !lngReporte) {
     mostrarToast("Usá ubicación exacta antes de enviar.");
@@ -503,6 +702,7 @@ window.enviarReporte = async () => {
   });
 
   mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
+  if (analytics) logEvent(analytics, "reporte_enviado", { tipo: tipoReporte.value });
 
   zonaReporte.value = "";
   comentarioReporte.value = "";
