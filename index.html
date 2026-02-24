@@ -503,6 +503,9 @@ import {
 import {
   getStorage, ref, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import {
+  getAnalytics, isSupported, logEvent
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
 const firebaseConfig = {
   apiKey: "TU_API_KEY",
@@ -510,12 +513,29 @@ const firebaseConfig = {
   projectId: "saladillo-cuida",
   storageBucket: "saladillo-cuida.firebasestorage.app",
   messagingSenderId: "728549842822",
-  appId: "1:728549842822:web:e4fdf5e08d915e9461d607"
+  appId: "1:728549842822:web:e4fdf5e08d915e9461d607",
+  measurementId: "G-61V3Y4CFVR"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+let analytics = null;
+
+async function iniciarAnalytics() {
+  try {
+    const soportado = await isSupported();
+    if (!soportado) return;
+
+    analytics = getAnalytics(app);
+    logEvent(analytics, "app_open");
+  } catch (err) {
+    console.log("Analytics no disponible:", err);
+  }
+}
+
+iniciarAnalytics();
 
 const ADMIN_KEY = "saladillo2026";
 const isAdmin = new URLSearchParams(location.search).get("admin") === ADMIN_KEY;
@@ -546,6 +566,7 @@ window.usarUbicacion = () => {
 };
 
 window.publicar = async () => {
+  if (analytics) logEvent(analytics, "inicio_publicacion");
   btnPublicarAviso.disabled = true;
   btnPublicarAviso.innerText = "Publicando...";
 
@@ -570,6 +591,7 @@ window.publicar = async () => {
     });
 
     mostrarToast("✅ Aviso publicado con éxito!");
+    if (analytics) logEvent(analytics, "aviso_publicado", { estado: estado.value, tipo: tipo.value });
     cartelPublicado.style.display = "block";
 
     setTimeout(() => {
@@ -636,6 +658,7 @@ window.irAReportes = () => {
 };
 
 window.enviarReporte = async () => {
+  if (analytics) logEvent(analytics, "inicio_reporte_calle");
 
   if (!latReporte || !lngReporte) {
     mostrarToast("Usá ubicación exacta antes de enviar.");
@@ -679,6 +702,7 @@ window.enviarReporte = async () => {
   });
 
   mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
+  if (analytics) logEvent(analytics, "reporte_enviado", { tipo: tipoReporte.value });
 
   zonaReporte.value = "";
   comentarioReporte.value = "";
