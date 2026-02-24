@@ -228,8 +228,9 @@ button {
 .btn-perdido { background: #e53935; }
 .btn-encontrado { background: #1e88e5; }
 .btn-adopcion { background: #8e24aa; }
-.btn-quiero-adoptar { background: #7b1fa2; }
+.btn-quiero-adoptar { background: #5e1680; }
 .btn-ver-avisos { background: #546e7a; }
+.btn-reportar-calle { background: #00695c; }
 
 .publish-success {
   display: none;
@@ -340,7 +341,7 @@ button {
     </button>
     <button class="quick-action-btn btn-adopcion" onclick="irAPublicar('En adopción')">
       3) Busca Familia
-      <small>Publicá para dar en adopción de forma responsable.</small>
+      <small>Publicá para adopción responsable.</small>
     </button>
     <button class="quick-action-btn btn-quiero-adoptar" onclick="verAdopciones()">
       4) Quiero adoptar
@@ -349,6 +350,10 @@ button {
     <button class="quick-action-btn btn-ver-avisos" onclick="irAAvisos()">
       5) Ver avisos
       <small>Ir directo al listado completo de avisos recientes.</small>
+    </button>
+    <button class="quick-action-btn btn-reportar-calle" onclick="irAReportes()">
+      6) Reportar animal en la calle
+      <small>Tu reporte ayuda a conocer la realidad de los animales en la calle.</small>
     </button>
   </div>
 </div>
@@ -427,7 +432,7 @@ button {
 </div>
 
 <!-- REPORTES -->
-<div class="card">
+<div class="card" id="reportesCard">
 <h2>📊 Reportar animal en situación de calle</h2>
 
 <p id="contadorReportes" style="font-weight:bold; margin-bottom:10px;">
@@ -599,6 +604,16 @@ window.irAAvisos = () => {
 
   setTimeout(() => {
     avisosCard.classList.remove("focus-avisos");
+  }, 1800);
+};
+
+
+window.irAReportes = () => {
+  reportesCard.classList.add("focus-avisos");
+  reportesCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  setTimeout(() => {
+    reportesCard.classList.remove("focus-avisos");
   }, 1800);
 };
 
