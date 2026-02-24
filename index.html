@@ -228,6 +228,8 @@ button {
 .btn-perdido { background: #e53935; }
 .btn-encontrado { background: #1e88e5; }
 .btn-adopcion { background: #8e24aa; }
+.btn-quiero-adoptar { background: #7b1fa2; }
+.btn-ver-avisos { background: #546e7a; }
 
 .publish-success {
   display: none;
@@ -248,6 +250,10 @@ button {
 
 .focus-publish {
   box-shadow: 0 0 0 3px rgba(76,175,80,.25), var(--sombra);
+}
+
+.focus-avisos {
+  box-shadow: 0 0 0 3px rgba(84,110,122,.25), var(--sombra);
 }
 	/* ============================= */
 /* MEJORAS VISUALES PRO */
@@ -333,8 +339,16 @@ button {
       <small>Cargá el aviso para ubicar a su familia.</small>
     </button>
     <button class="quick-action-btn btn-adopcion" onclick="irAPublicar('En adopción')">
-      3) ¿Querés adoptar?
+      3) Busca Familia
       <small>Publicá para dar en adopción de forma responsable.</small>
+    </button>
+    <button class="quick-action-btn btn-quiero-adoptar" onclick="verAdopciones()">
+      4) Quiero adoptar
+      <small>Te mostramos solo los avisos en adopción.</small>
+    </button>
+    <button class="quick-action-btn btn-ver-avisos" onclick="irAAvisos()">
+      5) Ver avisos
+      <small>Ir directo al listado completo de avisos recientes.</small>
     </button>
   </div>
 </div>
@@ -390,7 +404,7 @@ button {
 </div>
 
 <!-- AVISOS -->
-<div class="card">
+<div class="card" id="avisosCard">
 <h2>🐾 Avisos recientes</h2>
 
 <!-- FILTROS -->
@@ -563,6 +577,31 @@ window.irAPublicar = (estadoSeleccionado) => {
   }, 1800);
 };
 
+
+window.verAdopciones = () => {
+  filtroEstado.value = "En adopción";
+  mostrarAvisosFiltrados();
+  avisosCard.classList.add("focus-avisos");
+  avisosCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  mostrarToast("Mostrando avisos en adopción.");
+
+  setTimeout(() => {
+    avisosCard.classList.remove("focus-avisos");
+  }, 1800);
+};
+
+window.irAAvisos = () => {
+  filtroTipo.value = "";
+  filtroEstado.value = "";
+  mostrarAvisosFiltrados();
+  avisosCard.classList.add("focus-avisos");
+  avisosCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  setTimeout(() => {
+    avisosCard.classList.remove("focus-avisos");
+  }, 1800);
+};
+
 window.enviarReporte = async () => {
 
   if (!latReporte || !lngReporte) {
@@ -606,7 +645,7 @@ window.enviarReporte = async () => {
     fecha: serverTimestamp()
   });
 
-  mostrarToast("📊 Reporte enviado. Gracias por ayudar.");
+  mostrarToast(" Reporte enviado. Gracias por ayudar.");
 
   zonaReporte.value = "";
   comentarioReporte.value = "";
