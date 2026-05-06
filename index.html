@@ -275,6 +275,16 @@ button {
 .badge.encontrado { background: #1e88e5; }
 .badge.adopcion { background: #8e24aa; }
 
+.resuelto-banner {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #e8f5e9;
+  color: #1b5e20;
+  font-weight: 700;
+  text-align: center;
+}
+
 /* Animación suave al aparecer */
 .post {
   animation: fadeUp .4s ease;
@@ -314,6 +324,20 @@ button {
 
   .toast {
     background: #2e7d32;
+  }
+}
+
+/* Ajuste para escritorio */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 900px;
+    margin: auto;
+  }
+
+  .post img,
+  .preview img {
+    max-height: 400px;
+    object-fit: cover;
   }
 }
 
@@ -756,24 +780,25 @@ function mostrarAvisosFiltrados() {
       const fechaStr = fecha.toLocaleString("es-AR");
 
       feed.innerHTML += `
-  <div class="post">
-    <strong>${a.tipo}</strong>
-    <span class="badge ${
-      a.estado === "Perdido" ? "perdido" :
-      a.estado === "Encontrado" ? "encontrado" :
-      "adopcion"
-    }">
-      ${a.estado}
-    </span>
-    · <small>${fechaStr}</small><br>
+        <div class="post">
+          ${a.resuelto ? `<div class="resuelto-banner">🏡 ¡Con su familia!</div>` : ""}
+          <strong>${a.tipo}</strong>
+          <span class="badge ${
+            a.estado === "Perdido" ? "perdido" :
+            a.estado === "Encontrado" ? "encontrado" :
+            "adopcion"
+          }">
+            ${a.estado}
+          </span>
+          · <small>${fechaStr}</small><br>
           ${a.ubicacion ? `<a href="${a.ubicacion}" target="_blank">📍 Ver en mapa</a>` : ""}
           ${a.foto ? `<img src="${a.foto}">` : ""}
           ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
           <p>📞 ${a.telefono || ""}</p>
           <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
-<button onclick="compartirAviso('${a.id}')">📤 Compartir</button>
-
+          <button onclick="compartirAviso('${a.id}')">📤 Compartir</button>
           ${isAdmin ? `
+            <button class="admin-btn" onclick="marcarResuelto('${a.id}')">✅ Marcar como resuelto</button>
             <button class="admin-btn" onclick="ocultar('${a.id}')">👁️ Ocultar</button>
             <button class="admin-btn" onclick="eliminar('${a.id}')">🗑️ Eliminar</button>
           ` : ""}
@@ -796,6 +821,12 @@ async function cargarEstadisticas() {
 
 window.ocultar = async id => {
   await updateDoc(doc(db, "avisos", id), { activo: false });
+  cargarAvisos();
+};
+
+window.marcarResuelto = async id => {
+  await updateDoc(doc(db, "avisos", id), { resuelto: true });
+  mostrarToast("✅ Aviso marcado como resuelto");
   cargarAvisos();
 };
 
@@ -853,7 +884,6 @@ Publicado en Saladillo Cuida`;
   }
 };
 
-	
 cargarAvisos();
 cargarEstadisticas();
 
