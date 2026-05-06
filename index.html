@@ -225,6 +225,16 @@ button {
   opacity: 0.95;
 }
 
+.btn-albergue {
+  background: linear-gradient(135deg, #2e7d32, #4CAF50);
+  box-shadow: 0 10px 24px rgba(46, 125, 50, 0.30);
+  border: 2px solid rgba(255,255,255,0.35);
+}
+
+.btn-albergue:hover {
+  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.35);
+}
+
 .btn-perdido { background: #e53935; }
 .btn-encontrado { background: #1e88e5; }
 .btn-adopcion { background: #8e24aa; }
@@ -355,6 +365,10 @@ button {
 <div class="card">
   <h2>🚀 ¿Qué necesitás hacer hoy?</h2>
   <div class="quick-actions">
+    <button class="quick-action-btn btn-albergue" onclick="irAAlbergue()">
+      🐶 Adoptá vaguitos del albergue
+      <small>Conocé a los perros que buscan una familia 💚</small>
+    </button>
     <button class="quick-action-btn btn-perdido" onclick="irAPublicar('Perdido')">
       1) Perdí a mi mascota
       <small>Publicá rápido con estado "Perdido".</small>
@@ -633,6 +647,10 @@ window.publicar = async () => {
     btnPublicarAviso.disabled = false;
     btnPublicarAviso.innerText = "Publicar aviso";
   }
+};
+
+window.irAAlbergue = () => {
+  location.href = "albergue.html";
 };
 
 window.irAPublicar = (estadoSeleccionado) => {
