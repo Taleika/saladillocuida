@@ -1,17 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { firebaseConfig } from "./firebase-config.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "saladillo-cuida.firebaseapp.com",
-  projectId: "saladillo-cuida",
-  storageBucket: "saladillo-cuida.firebasestorage.app",
-  messagingSenderId: "728549842822",
-  appId: "1:728549842822:web:e4fdf5e08d915e9461d607",
-  measurementId: "G-61V3Y4CFVR"
-};
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const state = { all: [], filtered: [] };
 const els = Object.fromEntries(["cardsGrid","searchInput","edadFilter","tamanoFilter","sexoFilter","canilFilter","estadoFilter","ordenFilter","btnSorprendeme","btnTodos"].map(id=>[id,document.getElementById(id)]));
