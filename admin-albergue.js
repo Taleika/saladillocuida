@@ -38,6 +38,12 @@ function normalize(v) {
   return (v || "").toString().toLowerCase().trim();
 }
 
+function formatFecha(ts) {
+  const d = ts?.toDate?.();
+  if (!d) return "-";
+  return d.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
+}
+
 function adminCard(animal) {
   return `
     <article class="card" style="padding:12px">
@@ -47,7 +53,9 @@ function adminCard(animal) {
           <strong>${animal.nombre || "Sin nombre"}</strong><br>
           <small>ID: ${animal.idFicha || "-"}</small><br>
           <small>Canil: ${animal.canil || "-"}</small><br>
-          <small>Estado actual: <strong>${animal.estado || "disponible"}</strong></small>
+          <small>Estado actual: <strong>${animal.estado || "disponible"}</strong></small><br>
+          <small>Consultas de adopción: <strong>${animal.consultasAdopcion || 0}</strong></small><br>
+          <small>Última consulta: <strong>${formatFecha(animal.ultimaConsultaAt)}</strong></small>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
