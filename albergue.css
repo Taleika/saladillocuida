@@ -27,7 +27,7 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-s
 .state-badge{position:absolute;top:10px;right:10px;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
 .state-adoptado{background:#d32f2f}.state-reservado{background:#ef6c00}
 .adoptado .photo{filter:grayscale(1);opacity:.7}.adoptado{opacity:.86}
-.content{padding:14px}.name{margin:0;color:#176d2c;font-size:1.7rem}.meta{display:flex;gap:10px;flex-wrap:wrap;color:#39503e;font-weight:600;font-size:.95rem;margin-top:8px}
+.content{padding:14px}.name{margin:0;color:#176d2c;font-size:1.7rem}.raza{margin:6px 0 2px;font-size:.98rem;font-weight:700;color:#7a3f00;background:#fff4dd;border:1px dashed #f1c27a;display:inline-flex;padding:4px 10px;border-radius:999px;max-width:100%}.meta{display:flex;gap:10px;flex-wrap:wrap;color:#39503e;font-weight:600;font-size:.95rem;margin-top:8px}
 .desc{color:#34443a;line-height:1.35}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.chip{background:#edf4ed;border-radius:999px;padding:6px 10px;font-size:.86rem;color:#38503e;font-weight:600}
 .btn-adopt{width:100%;border:none;border-radius:12px;padding:12px;font-size:1.05rem;font-weight:800;background:var(--verde);color:#fff;cursor:pointer}
