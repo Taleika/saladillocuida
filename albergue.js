@@ -9,7 +9,7 @@ const els = Object.fromEntries(["cardsGrid","searchInput","edadFilter","tamanoFi
 
 function uniqueBy(field){return [...new Set(state.all.map(a=>a[field]).filter(Boolean))].sort();}
 function fillFilters(){["edad","tamano","sexo","canil"].forEach(f=>{els[`${f}Filter`].innerHTML=`<option value="">${f.charAt(0).toUpperCase()+f.slice(1)}</option>`;uniqueBy(f).forEach(v=>els[`${f}Filter`].append(new Option(v,v)));});}
-function waUrl(a){const m=`Hola, quiero consultar por la adopción del animal ID ${a.idFicha} - ${a.nombre}.`;return `https://wa.me/549234565697?text=${encodeURIComponent(m)}`;}
+function waUrl(a){const m=`Hola, quiero consultar por la adopción del animal ID ${a.idFicha} - ${a.nombre}.`;return `https://wa.me/5492345656397?text=${encodeURIComponent(m)}`;}
 
 function card(a){
   const adoptado=a.estado==="adoptado";
