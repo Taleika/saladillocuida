@@ -23,10 +23,11 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-s
 .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
 .card{background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--sombra);border:1px solid var(--borde)}
 .photo-wrap{position:relative}.photo{width:100%;height:230px;object-fit:cover;display:block}
-.id-badge{position:absolute;top:10px;left:10px;background:#155f26;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.9rem}
-.state-badge{position:absolute;top:10px;right:10px;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.8rem}
-.state-adoptado{background:#d32f2f}.state-reservado{background:#ef6c00}
-.adoptado .photo{filter:grayscale(1);opacity:.7}.adoptado{opacity:.86}
+.id-badge{position:absolute;top:10px;right:10px;background:#155f26;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:.9rem}
+.state-badge{position:absolute;color:#fff;padding:6px 12px;border-radius:999px;font-weight:800;font-size:.8rem;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.state-adoptado{top:12px;left:12px;background:#2eaf4f}
+.state-reservado{top:12px;left:12px;background:#ef6c00}
+.adoptado .photo{filter:grayscale(100%);opacity:.65}.adoptado{opacity:.95}
 .content{padding:14px}.name{margin:0;color:#176d2c;font-size:1.7rem}.raza{margin:6px 0 2px;font-size:.98rem;font-weight:700;color:#7a3f00;background:#fff4dd;border:1px dashed #f1c27a;display:inline-flex;padding:4px 10px;border-radius:999px;max-width:100%}.meta{display:flex;gap:10px;flex-wrap:wrap;color:#39503e;font-weight:600;font-size:.95rem;margin-top:8px}
 .desc{color:#34443a;line-height:1.35}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.chip{background:#edf4ed;border-radius:999px;padding:6px 10px;font-size:.86rem;color:#38503e;font-weight:600}
