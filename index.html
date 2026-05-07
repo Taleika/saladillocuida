@@ -797,6 +797,8 @@ function mostrarAvisosFiltrados() {
       const fecha = a.fecha?.toDate ? a.fecha.toDate() : new Date();
       const fechaStr = fecha.toLocaleString("es-AR");
 
+      const telefonoLimpio = (a.telefono || "").replace(/\D/g, "");
+
       feed.innerHTML += `
         <div class="post">
           ${a.resuelto ? `<div class="resuelto-banner">🏡 ¡Con su familia!</div>` : ""}
@@ -813,7 +815,7 @@ function mostrarAvisosFiltrados() {
           ${a.foto ? `<img src="${a.foto}">` : ""}
           ${a.comentario ? `<p>📝 ${a.comentario}</p>` : ""}
           <p>📞 ${a.telefono || ""}</p>
-          <button class="whatsapp-btn" onclick="window.open('https://wa.me/${a.telefono}')">WhatsApp</button>
+          <button class="whatsapp-btn" onclick="window.open('https://wa.me/${telefonoLimpio}', '_blank')">WhatsApp</button>
           <button onclick="compartirAviso('${a.id}')">📤 Compartir</button>
           ${isAdmin ? `
             <button class="admin-btn" onclick="marcarResuelto('${a.id}')">✅ Marcar como resuelto</button>
