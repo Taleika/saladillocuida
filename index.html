@@ -241,6 +241,10 @@ button {
 .btn-quiero-adoptar { background: #5e1680; }
 .btn-ver-avisos { background: #546e7a; }
 .btn-reportar-calle { background: #00695c; }
+.btn-veterinarias {
+  background: linear-gradient(135deg, #156f32, #22a447);
+  box-shadow: 0 10px 24px rgba(21, 111, 50, 0.28);
+}
 
 .publish-success {
   display: none;
@@ -368,6 +372,10 @@ button {
     <button class="quick-action-btn btn-albergue" onclick="irAAlbergue()">
       🐶 Adoptá vaguitos del albergue
       <small>Conocé a los perros que buscan una familia 💚</small>
+    </button>
+    <button class="quick-action-btn btn-veterinarias" onclick="irAVeterinarias()">
+      🩺 Guía Veterinaria
+      <small>Veterinarias, teléfonos útiles y contactos de urgencia en Saladillo.</small>
     </button>
     <button class="quick-action-btn btn-perdido" onclick="irAPublicar('Perdido')">
       1) Perdí a mi mascota
@@ -651,6 +659,10 @@ window.publicar = async () => {
 
 window.irAAlbergue = () => {
   location.href = "albergue.html";
+};
+
+window.irAVeterinarias = () => {
+  location.href = "veterinarias.html";
 };
 
 window.irAPublicar = (estadoSeleccionado) => {
