@@ -1,4 +1,4 @@
-import { veterinariasIniciales } from "./veterinarias-data.js?v=20260804-1";
+import { veterinariasIniciales } from "./veterinarias-data.js?v=20260804-2";
 
 const state={all:veterinariasIniciales,filter:"todos"};const grid=document.getElementById("grid"),search=document.getElementById("search"),results=document.getElementById("results"),filters=document.getElementById("filters");
 const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
