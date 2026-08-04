@@ -7,7 +7,7 @@ export const veterinariasIniciales = [
   { id:"veterinaria-el-rodeo", nombre:"Veterinaria El Rodeo", direccion:"Av. Moreno 3592", telefonoPrincipal:"02344 45-3270", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:7 },
   { id:"oscar-arbizu", nombre:"Arbizu / Oscar Arbizu", direccion:"San Martín 2861", telefonoPrincipal:"2345 683288", whatsappPrincipal:"5492345683288", tipoAtencion:"veterinario", urgencias24hs:false, visible:true, orden:8 },
   { id:"gerardo-murua", nombre:"Gerardo Murúa", direccion:"", telefonoPrincipal:"2345 453984", whatsappPrincipal:"5492345453984", tipoAtencion:"veterinario", urgencias24hs:false, visible:true, orden:9 },
-  { id:"yanina-escobar", nombre:"Yanina Escobar", direccion:"", telefonoPrincipal:"221 1555 9793", whatsappPrincipal:"54922115559793", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:10 },
+  { id:"santa-gertrudis", nombre:"Santa Gertrudis. Medicina Veterinaria", direccion:"Estrada 2952", telefonoPrincipal:"02344 47-6975", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:10 },
   { id:"centro-medico-veterinario", nombre:"Centro Médico Veterinario", direccion:"", telefonoPrincipal:"2345 474847", whatsappPrincipal:"5492345474847", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:11 },
   { id:"trex-javier-beruhard", nombre:"T.Rex / Javier Beruhard", direccion:"", telefonoPrincipal:"221 3177177", telefonoSecundario:"221 6701490", whatsappPrincipal:"5492213177177", tipoAtencion:"veterinaria, animales exóticos, petshop", urgencias24hs:false, visible:true, orden:12 }
 ];
