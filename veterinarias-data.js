@@ -10,5 +10,6 @@ export const veterinariasIniciales = [
   { id:"santa-gertrudis", nombre:"Santa Gertrudis. Medicina Veterinaria", direccion:"Estrada 2952", telefonoPrincipal:"02344 47-6975", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:10 },
   { id:"centro-medico-veterinario", nombre:"Centro Médico Veterinario", direccion:"", telefonoPrincipal:"2345 474847", whatsappPrincipal:"5492345474847", tipoAtencion:"veterinaria", urgencias24hs:false, visible:true, orden:11 },
   { id:"trex-javier-beruhard", nombre:"T.Rex / Javier Beruhard", direccion:"", telefonoPrincipal:"221 3177177", telefonoSecundario:"221 6701490", whatsappPrincipal:"5492213177177", tipoAtencion:"veterinaria, animales exóticos, petshop", urgencias24hs:false, visible:true, orden:12 },
-  { id:"veterinaria-ulises", nombre:"Veterinaria Ulises", direccion:"", telefonoPrincipal:"+54 9 2215 55-9793", whatsappPrincipal:"5492215559793", tipoAtencion:"veterinaria a domicilio", urgencias24hs:false, visible:true, orden:13 }
+  { id:"veterinaria-ulises", nombre:"Veterinaria Ulises", direccion:"", telefonoPrincipal:"+54 9 2215 55-9793", whatsappPrincipal:"5492215559793", tipoAtencion:"veterinaria a domicilio", urgencias24hs:false, visible:true, orden:13 },
+  { id:"carolina-marquez", nombre:"Carolina Marquez", direccion:"", telefonoPrincipal:"2345 445471", whatsappPrincipal:"5492345445471", tipoAtencion:"veterinaria, visita a domicilio, urgencias", urgencias24hs:false, observaciones:"Hace visitas a domicilio y atiende urgencias.", visible:true, orden:14 }
 ];
